@@ -2,6 +2,18 @@
 
 import { useState } from "react";
 
+async function safeJson(res: Response) {
+  const text = await res.text();
+
+  if (!text) return null;
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
 type Props = {
   mediaId: string;
   mediaType: string;
@@ -91,16 +103,15 @@ export default function MediaActions({
     setMessage("");
 
     try {
-      const numericMediaId = Number(
-        typeof mediaId !== "undefined" && mediaId
-          ? mediaId
-          : typeof window !== "undefined"
-            ? window.location.pathname.split("/").filter(Boolean).pop()
-            : ""
-      );
+      const meResponse = await fetch("/api/auth/me", {
+        cache: "no-store",
+      });
 
-      if (!Number.isInteger(numericMediaId) || numericMediaId <= 0) {
-        throw new Error("Invalid media item.");
+      const meData = await safeJson(meResponse);
+      const userId = String(meData?.user?.id || "");
+
+      if (!userId) {
+        throw new Error("Please log in to add, rate, or review this.");
       }
 
       const numericMediaId = Number(mediaId);
@@ -115,6 +126,7 @@ export default function MediaActions({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          userId,
           mediaId: numericMediaId,
           status: nextStatus,
           ratingValue: rating || null,
@@ -122,10 +134,10 @@ export default function MediaActions({
         }),
       });
 
-      const data = await response.json().catch(() => null);
+      const data = await safeJson(response);
 
       if (!response.ok) {
-        throw new Error(data?.error || "Failed to save entry.");
+        throw new Error(data?.error || data?.message || "Failed to save entry.");
       }
 
       setStatus(nextStatus);
