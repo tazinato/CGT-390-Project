@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type SearchResult = {
   id: string;
@@ -8,7 +9,10 @@ type SearchResult = {
   subtitle: string;
   type: string;
   source: string;
-  href?: string;
+  href: string;
+  coverUrl: string | null;
+  provider?: string | null;
+  externalId?: string | null;
 };
 
 async function safeJson(res: Response) {
@@ -19,38 +23,261 @@ async function safeJson(res: Response) {
   try {
     return JSON.parse(text);
   } catch {
-    return null;
+    return {
+      error: "Response was not valid JSON.",
+      raw: text,
+    };
   }
 }
 
-export default function SearchPage() {
-  const [query, setQuery] = useState("");
-  const [hasLoadedUrlQuery, setHasLoadedUrlQuery] = useState(false);
+function getTypeLabel(type: string) {
+  if (type === "MOVIE") return "Movie";
+  if (type === "SHOW") return "Show";
+  if (type === "BOOK") return "Book";
+  if (type === "ALBUM") return "Album";
+  if (type === "GAME") return "Game";
+  if (type === "PERSON") return "Person";
+  return type;
+}
+
+function getActionLabel(result: SearchResult) {
+  if (result.provider && result.provider !== "LOCAL") {
+    return "Import / View";
+  }
+
+  if (result.type === "PERSON") {
+    return "Search Person";
+  }
+
+  return "View Media";
+}
+
+function ResultCover({ result }: { result: SearchResult }) {
+  if (result.type === "ALBUM") {
+    return (
+      <div
+        style={{
+          width: 140,
+          height: 210,
+          border: "1px solid #ccc",
+          borderRadius: 10,
+          overflow: "hidden",
+          background: "white",
+          display: "flex",
+          flexDirection: "column",
+          flexShrink: 0,
+        }}
+      >
+        <div
+          style={{
+            height: 35,
+            padding: "5px 7px",
+            fontSize: 12,
+            fontWeight: 600,
+            textAlign: "center",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            lineHeight: 1.15,
+            color: "#444",
+          }}
+        >
+          {result.subtitle.split(" · ")[0] || "Unknown Artist"}
+        </div>
+
+        <div
+          style={{
+            width: 140,
+            height: 140,
+            background: "#eee",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          {result.coverUrl ? (
+            <img
+              src={result.coverUrl}
+              alt={result.title}
+              loading="lazy"
+              decoding="async"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+              }}
+            />
+          ) : (
+            <span style={{ fontSize: 12, color: "#666" }}>No cover</span>
+          )}
+        </div>
+
+        <div
+          style={{
+            height: 35,
+            padding: "5px 7px",
+            fontSize: 12,
+            fontWeight: 700,
+            textAlign: "center",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            lineHeight: 1.15,
+          }}
+        >
+          {result.title}
+        </div>
+      </div>
+    );
+  }
+
+  if (result.coverUrl) {
+    return (
+      <img
+        src={result.coverUrl}
+        alt={result.title}
+        loading="lazy"
+        decoding="async"
+        style={{
+          width: 140,
+          height: 210,
+          objectFit: "cover",
+          borderRadius: 10,
+          border: "1px solid #ccc",
+          background: "#eee",
+          flexShrink: 0,
+          display: "block",
+        }}
+      />
+    );
+  }
+
+  return (
+    <div
+      style={{
+        width: 140,
+        height: 210,
+        border: "1px solid #ccc",
+        borderRadius: 10,
+        background: "#eee",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#666",
+        fontSize: 12,
+        flexShrink: 0,
+      }}
+    >
+      No cover
+    </div>
+  );
+}
+
+function SearchResultCard({ result }: { result: SearchResult }) {
+  return (
+    <a
+      href={result.href}
+      style={{
+        border: "1px solid #ddd",
+        borderRadius: 14,
+        padding: 16,
+        display: "flex",
+        gap: 18,
+        alignItems: "flex-start",
+        background: "white",
+        color: "inherit",
+        textDecoration: "none",
+      }}
+    >
+      <ResultCover result={result} />
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <h2
+          style={{
+            margin: "0 0 8px",
+            fontSize: 22,
+            lineHeight: 1.15,
+          }}
+        >
+          {result.title}
+        </h2>
+
+        <p
+          style={{
+            margin: "0 0 10px",
+            color: "#555",
+            lineHeight: 1.4,
+            fontSize: 16,
+          }}
+        >
+          {result.subtitle}
+        </p>
+
+        <p
+          style={{
+            margin: "0 0 14px",
+            color: "#666",
+            textTransform: "uppercase",
+            fontSize: 13,
+            letterSpacing: 0.3,
+          }}
+        >
+          {getTypeLabel(result.type)} · {result.source}
+        </p>
+
+        <span
+          style={{
+            display: "inline-block",
+            padding: "7px 10px",
+            borderRadius: 8,
+            border: "1px solid #222",
+            fontWeight: 700,
+            fontSize: 14,
+            background: "white",
+          }}
+        >
+          {getActionLabel(result)}
+        </span>
+      </div>
+    </a>
+  );
+}
+
+function SearchPageInner() {
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get("q") || "";
+
+  const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<SearchResult[]>([]);
-  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
-  async function runSearch(nextQuery: string) {
-    const trimmed = nextQuery.trim();
+  async function runSearch(nextQuery = query) {
+    const trimmedQuery = nextQuery.trim();
 
-    if (!trimmed) {
-      setMessage("Enter a search term.");
+    if (!trimmedQuery) {
       setResults([]);
+      setMessage("");
       return;
     }
 
     setLoading(true);
     setMessage("");
-    setResults([]);
 
     try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}`, {
-        cache: "no-store",
-      });
+      const res = await fetch(
+        `/api/search?q=${encodeURIComponent(trimmedQuery)}`,
+        {
+          cache: "no-store",
+        }
+      );
 
       const data = await safeJson(res);
 
       if (!res.ok || !data) {
+        setResults([]);
         setMessage(
           JSON.stringify(
             {
@@ -65,17 +292,28 @@ export default function SearchPage() {
         return;
       }
 
-      const nextResults = Array.isArray(data.results) ? data.results : [];
-      setResults(nextResults);
-
-      if (nextResults.length === 0) {
-        setMessage("No results found.");
+      if (!Array.isArray(data.results)) {
+        setResults([]);
+        setMessage(
+          JSON.stringify(
+            {
+              error: "Search response did not include a results array.",
+              response: data,
+            },
+            null,
+            2
+          )
+        );
+        return;
       }
+
+      setResults(data.results);
     } catch (error) {
+      setResults([]);
       setMessage(
         JSON.stringify(
           {
-            error: "Search crashed.",
+            error: "Search request crashed.",
             details: String(error),
           },
           null,
@@ -87,62 +325,58 @@ export default function SearchPage() {
     }
   }
 
-  useEffect(() => {
-    const urlQuery = new URLSearchParams(window.location.search).get("q") || "";
-    setQuery(urlQuery);
-    setHasLoadedUrlQuery(true);
+  function submitSearch(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    runSearch(query);
+  }
 
-    if (urlQuery.trim()) {
-      runSearch(urlQuery);
+  useEffect(() => {
+    if (initialQuery) {
+      runSearch(initialQuery);
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialQuery]);
 
   return (
     <main style={{ padding: 40, maxWidth: 1000 }}>
-      <h1>Search</h1>
-
       <form
-        onSubmit={(event) => {
-          event.preventDefault();
-
-          const trimmed = query.trim();
-
-          if (!trimmed) return;
-
-          window.history.replaceState(
-            null,
-            "",
-            `/search?q=${encodeURIComponent(trimmed)}`
-          );
-
-          runSearch(trimmed);
+        onSubmit={submitSearch}
+        style={{
+          display: "flex",
+          gap: 10,
+          alignItems: "end",
+          marginBottom: 28,
         }}
-        style={{ display: "flex", gap: 10, marginBottom: 24 }}
       >
-        <input
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search titles, actors, directors, authors, artists..."
-          style={{
-            padding: 12,
-            width: 520,
-            maxWidth: "100%",
-            border: "1px solid #ccc",
-            borderRadius: 10,
-          }}
-        />
+        <label style={{ flex: 1 }}>
+          <span style={{ display: "block", marginBottom: 6 }}>Search</span>
+
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search movies, shows, books, albums, games..."
+            style={{
+              width: "100%",
+              boxSizing: "border-box",
+              padding: "12px 14px",
+              borderRadius: 10,
+              border: "1px solid #ccc",
+              font: "inherit",
+            }}
+          />
+        </label>
 
         <button
           type="submit"
-          disabled={loading || !hasLoadedUrlQuery}
+          disabled={loading}
           style={{
-            padding: "12px 18px",
+            padding: "12px 16px",
             borderRadius: 10,
             border: "1px solid #222",
             background: "black",
             color: "white",
-            fontWeight: 800,
-            cursor: loading || !hasLoadedUrlQuery ? "not-allowed" : "pointer",
+            fontWeight: 700,
+            cursor: loading ? "not-allowed" : "pointer",
           }}
         >
           {loading ? "Searching..." : "Search"}
@@ -163,31 +397,23 @@ export default function SearchPage() {
         </pre>
       )}
 
-      <div style={{ display: "grid", gap: 12 }}>
+      {!loading && query.trim() && results.length === 0 && !message && (
+        <p>No results found.</p>
+      )}
+
+      <div style={{ display: "grid", gap: 16 }}>
         {results.map((result) => (
-          <a
-            key={result.id}
-            href={result.href || "#"}
-            style={{
-              display: "block",
-              border: "1px solid #ddd",
-              borderRadius: 12,
-              padding: 14,
-              textDecoration: "none",
-              color: "inherit",
-              background: "white",
-            }}
-          >
-            <div style={{ fontWeight: 800 }}>{result.title}</div>
-            <div style={{ color: "#555", marginTop: 4 }}>
-              {result.subtitle}
-            </div>
-            <div style={{ color: "#777", fontSize: 13, marginTop: 6 }}>
-              {result.type} · {result.source}
-            </div>
-          </a>
+          <SearchResultCard key={result.id} result={result} />
         ))}
       </div>
     </main>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<main style={{ padding: 40 }}>Loading search...</main>}>
+      <SearchPageInner />
+    </Suspense>
   );
 }
