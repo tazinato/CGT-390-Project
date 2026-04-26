@@ -1,266 +1,353 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import MediaActions from "@/app/components/MediaActions";
+import { useEffect, useState } from "react";
 
-type Person = {
-  id: number | string;
-  name: string;
-  role: string;
-  imageUrl: string | null;
-};
-
-type Extra = {
-  trailer: {
-    key: string;
-    url: string;
-    name: string;
-  } | null;
-  directors: Person[];
-  cast: Person[];
-};
-
-type Media = {
+type CurrentUser = {
   id: string;
-  title: string;
-  type: string;
-  description: string | null;
-  releaseDate: string | Date | null;
-  coverUrl: string | null;
-  backdropUrl?: string | null;
+  username: string;
+  displayName: string | null;
 };
 
-function yearFromDate(value: string | Date | null | undefined) {
-  if (!value) return null;
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return String(value).slice(0, 4);
-  }
-
-  return String(date.getFullYear());
-}
-
-function typeLabel(type: string) {
-  if (type === "MOVIE") return "Movie";
-  if (type === "SHOW") return "Show";
-  if (type === "BOOK") return "Book";
-  if (type === "ALBUM") return "Album";
-  if (type === "GAME") return "Game";
-  return type;
-}
-
-function PeopleCarousel({
-  title,
-  people,
-}: {
-  title: string;
-  people: Person[];
-}) {
-  const rowRef = useRef<HTMLDivElement | null>(null);
-
-  if (people.length === 0) return null;
-
-  function scrollBy(amount: number) {
-    rowRef.current?.scrollBy({
-      left: amount,
-      behavior: "smooth",
-    });
-  }
-
-  return (
-    <section className="mt-8">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">{title}</h2>
-
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => scrollBy(-360)}
-            className="rounded-full border border-neutral-700 px-3 py-1 text-sm text-neutral-200 hover:bg-neutral-800"
-          >
-            ←
-          </button>
-
-          <button
-            type="button"
-            onClick={() => scrollBy(360)}
-            className="rounded-full border border-neutral-700 px-3 py-1 text-sm text-neutral-200 hover:bg-neutral-800"
-          >
-            →
-          </button>
-        </div>
-      </div>
-
-      <div
-        ref={rowRef}
-        className="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none]"
-      >
-        {people.map((person) => (
-          <div
-            key={`${person.id}-${person.role}`}
-            className="w-32 shrink-0 rounded-2xl border border-neutral-800 bg-neutral-900 p-3"
-          >
-            <div className="h-36 w-full overflow-hidden rounded-xl bg-neutral-800">
-              {person.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={person.imageUrl}
-                  alt={person.name}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-xs text-neutral-500">
-                  No image
-                </div>
-              )}
-            </div>
-
-            <div className="mt-2 text-sm font-semibold">{person.name}</div>
-            <div className="mt-1 line-clamp-2 text-xs text-neutral-400">
-              {person.role}
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-export default function MediaOverviewClient({
-  media,
-  existingEntry = null,
-}: {
-  media: Media;
+type Props = {
+  mediaId: string;
+  mediaType: string;
   existingEntry?: {
     id?: string;
     status?: string | null;
     rating?: number | null;
     review?: string | null;
   } | null;
-}) {
-  const [extra, setExtra] = useState<Extra>({
-    trailer: null,
-    directors: [],
-    cast: [],
-  });
+};
+
+function getCopy(type: string) {
+  if (type === "MOVIE") {
+    return {
+      wishlist: "Want to watch",
+      inProgress: null,
+      completed: "Watched",
+      review: "Review movie",
+      placeholder: "What did you think of this movie?",
+    };
+  }
+
+  if (type === "SHOW") {
+    return {
+      wishlist: "Want to watch",
+      inProgress: "Watching",
+      completed: "Watched",
+      review: "Review show",
+      placeholder: "What did you think of this show?",
+    };
+  }
+
+  if (type === "BOOK") {
+    return {
+      wishlist: "Want to read",
+      inProgress: "Reading",
+      completed: "Read",
+      review: "Review book",
+      placeholder: "What did you think of this book?",
+    };
+  }
+
+  if (type === "ALBUM") {
+    return {
+      wishlist: "Want to listen",
+      inProgress: null,
+      completed: "Listened",
+      review: "Review album",
+      placeholder: "What did you think of this album?",
+    };
+  }
+
+  if (type === "GAME") {
+    return {
+      wishlist: "Want to play",
+      inProgress: "Playing",
+      completed: "Played",
+      review: "Review game",
+      placeholder: "What did you think of this game?",
+    };
+  }
+
+  return {
+    wishlist: "Want to check out",
+    inProgress: "In progress",
+    completed: "Done",
+    review: "Review",
+    placeholder: "What did you think?",
+  };
+}
+
+async function safeJson(res: Response) {
+  const text = await res.text();
+
+  if (!text) return null;
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+export default function MediaActions({
+  mediaId,
+  mediaType,
+  existingEntry = null,
+}: Props) {
+  const copy = getCopy(mediaType);
+
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [authLoaded, setAuthLoaded] = useState(false);
+
+  const [status, setStatus] = useState(existingEntry?.status || "");
+  const [rating, setRating] = useState(existingEntry?.rating || 0);
+  const [review, setReview] = useState(existingEntry?.review || "");
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     let cancelled = false;
 
-    async function loadExtra() {
-      if (media.type !== "MOVIE" && media.type !== "SHOW") return;
-
+    async function loadCurrentUser() {
       try {
-        const response = await fetch(`/api/media/${media.id}/tmdb-extra`, {
+        const response = await fetch("/api/auth/me", {
           cache: "no-store",
         });
 
-        const data = await response.json();
+        const data = await safeJson(response);
 
-        if (!response.ok) return;
-
-        if (!cancelled) {
-          setExtra({
-            trailer: data.trailer || null,
-            directors: Array.isArray(data.directors) ? data.directors : [],
-            cast: Array.isArray(data.cast) ? data.cast : [],
-          });
+        if (!cancelled && response.ok && data?.user) {
+          setCurrentUser(data.user);
         }
       } catch {
-        // Keep page usable if trailer/cast fetch fails.
+        if (!cancelled) {
+          setCurrentUser(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setAuthLoaded(true);
+        }
       }
     }
 
-    loadExtra();
+    loadCurrentUser();
 
     return () => {
       cancelled = true;
     };
-  }, [media.id, media.type]);
+  }, []);
 
-  const year = yearFromDate(media.releaseDate);
+  async function save(nextStatus = status || "COMPLETED") {
+    setSaving(true);
+    setMessage("");
+
+    try {
+      if (!currentUser?.id) {
+        throw new Error("Please log in to add, rate, or review this.");
+      }
+
+      const response = await fetch("/api/entries", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          mediaId: Number(mediaId),
+          status: nextStatus,
+          ratingValue: rating || null,
+          reviewText: review.trim() || null,
+        }),
+      });
+
+      const data = await safeJson(response);
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Failed to save entry.");
+      }
+
+      setStatus(nextStatus);
+      setMessage("Saved.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Failed to save.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function StatusButton({
+    value,
+    label,
+  }: {
+    value: string;
+    label: string;
+  }) {
+    const active = status === value;
+
+    return (
+      <button
+        type="button"
+        disabled={saving || !authLoaded || !currentUser}
+        onClick={() => save(value)}
+        style={{
+          padding: "9px 12px",
+          borderRadius: 8,
+          border: active ? "2px solid black" : "1px solid #ccc",
+          background: active ? "#f0f0f0" : "white",
+          fontWeight: active ? 700 : 500,
+          cursor: saving || !currentUser ? "not-allowed" : "pointer",
+        }}
+      >
+        {active ? "✓ " : ""}
+        {label}
+      </button>
+    );
+  }
 
   return (
-    <main className="min-h-screen bg-neutral-950 px-4 py-8 text-white">
-      <div className="mx-auto max-w-6xl">
-        <a href="/search" className="text-sm text-neutral-400 hover:text-white">
-          ← Back to search
-        </a>
+    <section
+      style={{
+        border: "1px solid #ccc",
+        borderRadius: 12,
+        padding: 18,
+        background: "white",
+      }}
+    >
+      <h2 style={{ marginTop: 0, marginBottom: 12 }}>Add / Rate / Review</h2>
 
-        <section className="mt-6 grid gap-8 lg:grid-cols-[280px_1fr]">
-          <div>
-            <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900">
-              {media.coverUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={media.coverUrl}
-                  alt={`${media.title} poster`}
-                  className="w-full object-cover"
-                />
-              ) : (
-                <div className="flex aspect-[2/3] items-center justify-center text-neutral-500">
-                  No image
-                </div>
-              )}
-            </div>
-          </div>
+      {!authLoaded ? (
+        <p style={{ marginTop: 0, color: "#666" }}>Checking login...</p>
+      ) : !currentUser ? (
+        <p style={{ marginTop: 0, color: "#900" }}>
+          Please <a href="/login">log in</a> to add, rate, or review this.
+        </p>
+      ) : null}
 
-          <div>
-            <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
-              <p className="text-sm uppercase tracking-[0.25em] text-neutral-500">
-                {typeLabel(media.type)}
-              </p>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <StatusButton value="WISHLIST" label={copy.wishlist} />
 
-              <h1 className="mt-2 text-4xl font-semibold">
-                {media.title}
-                {year ? (
-                  <span className="text-neutral-500"> ({year})</span>
-                ) : null}
-              </h1>
+        {copy.inProgress ? (
+          <StatusButton value="IN_PROGRESS" label={copy.inProgress} />
+        ) : null}
 
-              <p className="mt-4 max-w-3xl text-neutral-300">
-                {media.description || "No description available."}
-              </p>
-            </div>
-
-            <div className="mt-6">
-              <MediaActions
-                mediaId={media.id}
-                mediaType={media.type}
-                existingEntry={existingEntry}
-              />
-            </div>
-
-            {(media.type === "MOVIE" || media.type === "SHOW") ? (
-              <>
-                <section className="mt-8">
-                  <h2 className="text-xl font-semibold">Trailer</h2>
-
-                  {extra.trailer ? (
-                    <div className="mt-3 aspect-video overflow-hidden rounded-2xl border border-neutral-800 bg-black">
-                      <iframe
-                        src={extra.trailer.url}
-                        title={extra.trailer.name}
-                        allowFullScreen
-                        className="h-full w-full"
-                      />
-                    </div>
-                  ) : (
-                    <p className="mt-2 text-neutral-400">
-                      No trailer available.
-                    </p>
-                  )}
-                </section>
-
-                <PeopleCarousel title="Director / Creator" people={extra.directors} />
-                <PeopleCarousel title="Main cast" people={extra.cast} />
-              </>
-            ) : null}
-          </div>
-        </section>
+        <StatusButton value="COMPLETED" label={copy.completed} />
       </div>
-    </main>
+
+      <div style={{ marginTop: 18 }}>
+        <div
+          style={{
+            display: "block",
+            fontWeight: 700,
+            marginBottom: 8,
+          }}
+        >
+          Rating: {rating ? `${rating}/10` : "No rating"}
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            gap: 6,
+            flexWrap: "wrap",
+          }}
+        >
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setRating(value)}
+              disabled={!currentUser || saving}
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 999,
+                border: rating === value ? "2px solid black" : "1px solid #ccc",
+                background: rating === value ? "#f0f0f0" : "white",
+                fontWeight: rating === value ? 700 : 400,
+                cursor: !currentUser || saving ? "not-allowed" : "pointer",
+              }}
+            >
+              {value}
+            </button>
+          ))}
+
+          {rating ? (
+            <button
+              type="button"
+              onClick={() => setRating(0)}
+              disabled={!currentUser || saving}
+              style={{
+                padding: "0 10px",
+                borderRadius: 999,
+                border: "1px solid #ccc",
+                background: "white",
+                cursor: !currentUser || saving ? "not-allowed" : "pointer",
+              }}
+            >
+              Clear
+            </button>
+          ) : null}
+        </div>
+      </div>
+
+      <div style={{ marginTop: 18 }}>
+        <label
+          htmlFor="review-text"
+          style={{
+            display: "block",
+            fontWeight: 700,
+            marginBottom: 8,
+          }}
+        >
+          {copy.review}
+        </label>
+
+        <textarea
+          id="review-text"
+          value={review}
+          onChange={(event) => setReview(event.target.value)}
+          rows={3}
+          disabled={!currentUser || saving}
+          placeholder={copy.placeholder}
+          style={{
+            display: "block",
+            width: "100%",
+            boxSizing: "border-box",
+            padding: 10,
+            borderRadius: 8,
+            border: "1px solid #ccc",
+            font: "inherit",
+            lineHeight: 1.4,
+            resize: "vertical",
+            background: !currentUser ? "#f6f6f6" : "white",
+          }}
+        />
+      </div>
+
+      <button
+        type="button"
+        disabled={saving || !authLoaded || !currentUser}
+        onClick={() => save()}
+        style={{
+          marginTop: 14,
+          padding: "9px 12px",
+          borderRadius: 8,
+          border: "1px solid #222",
+          background: "black",
+          color: "white",
+          fontWeight: 700,
+          cursor: saving || !currentUser ? "not-allowed" : "pointer",
+          opacity: !currentUser ? 0.65 : 1,
+        }}
+      >
+        {saving ? "Saving..." : "Save review/log"}
+      </button>
+
+      {message ? (
+        <p style={{ color: "#555", marginBottom: 0 }}>{message}</p>
+      ) : null}
+    </section>
   );
 }
