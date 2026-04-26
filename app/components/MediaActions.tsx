@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 async function safeJson(res: Response) {
   const text = await res.text();
@@ -90,6 +91,7 @@ export default function MediaActions({
   mediaType,
   existingEntry = null,
 }: Props) {
+  const router = useRouter();
   const copy = getCopy(mediaType);
 
   const [status, setStatus] = useState(existingEntry?.status || "");
@@ -143,7 +145,7 @@ export default function MediaActions({
       setStatus(nextStatus);
       setMessage("Saved.");
 
-      window.location.reload();
+      router.refresh();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Failed to save.");
     } finally {
@@ -151,13 +153,7 @@ export default function MediaActions({
     }
   }
 
-  function StatusButton({
-    value,
-    label,
-  }: {
-    value: string;
-    label: string;
-  }) {
+  function StatusButton({ value, label }: { value: string; label: string }) {
     const active = status === value;
 
     return (
@@ -202,8 +198,7 @@ export default function MediaActions({
       </div>
 
       <div style={{ marginTop: 18 }}>
-        <label
-          
+        <div
           style={{
             display: "block",
             fontWeight: 700,
@@ -211,8 +206,9 @@ export default function MediaActions({
           }}
         >
           Rating: {rating ? `${rating}/10` : "No rating"}
-        </label>
-<div
+        </div>
+
+        <div
           style={{
             display: "flex",
             gap: 6,
@@ -224,6 +220,7 @@ export default function MediaActions({
             <button
               key={value}
               type="button"
+              disabled={saving}
               onClick={() => setRating(value)}
               style={{
                 width: 34,
@@ -232,12 +229,29 @@ export default function MediaActions({
                 border: rating === value ? "2px solid black" : "1px solid #ccc",
                 background: rating === value ? "#f0f0f0" : "white",
                 fontWeight: rating === value ? 700 : 400,
-                cursor: "pointer",
+                cursor: saving ? "not-allowed" : "pointer",
               }}
             >
               {value}
             </button>
           ))}
+
+          {rating ? (
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => setRating(0)}
+              style={{
+                padding: "6px 10px",
+                borderRadius: 999,
+                border: "1px solid #ccc",
+                background: "white",
+                cursor: saving ? "not-allowed" : "pointer",
+              }}
+            >
+              Clear
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -258,6 +272,7 @@ export default function MediaActions({
           value={review}
           onChange={(event) => setReview(event.target.value)}
           rows={2}
+          disabled={saving}
           placeholder={copy.placeholder}
           style={{
             display: "block",
@@ -269,7 +284,7 @@ export default function MediaActions({
             font: "inherit",
             lineHeight: 1.45,
             resize: "none",
-            background: "white",
+            background: saving ? "#f6f6f6" : "white",
           }}
         />
       </div>
@@ -287,6 +302,7 @@ export default function MediaActions({
           color: "white",
           fontWeight: 700,
           cursor: saving ? "not-allowed" : "pointer",
+          opacity: saving ? 0.7 : 1,
         }}
       >
         {saving ? "Saving..." : "Save review/log"}
