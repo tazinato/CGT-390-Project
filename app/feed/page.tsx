@@ -38,6 +38,12 @@ type Media = {
     timeToBeatHours?: number | null;
     multiplayer?: boolean | null;
   } | null;
+  provider?: string | null;
+  externalId?: string | null;
+  tmdbRank?: number | null;
+  tmdbVoteAverage?: number | null;
+  tmdbVoteCount?: number | null;
+  tmdbPopularity?: number | null;
 };
 
 type FeedEvent = {
@@ -120,7 +126,7 @@ function formatDuration(seconds: number | null | undefined) {
 
 function getEmptyMessage(scope: FeedScope) {
   if (scope === "popular") {
-    return "No popular activity this week yet.";
+    return "No TMDB popular movies loaded this week.";
   }
 
   if (scope === "friends") {
@@ -132,6 +138,16 @@ function getEmptyMessage(scope: FeedScope) {
   }
 
   return "No feed activity yet.";
+}
+
+function getMediaHref(media: Media, scope: FeedScope) {
+  if (scope === "popular" && media.provider === "TMDB" && media.externalId) {
+    return `/media/import?provider=TMDB&externalId=${encodeURIComponent(
+      media.externalId
+    )}&type=MOVIE`;
+  }
+
+  return `/media/${media.id}`;
 }
 
 function MediaCoverCard({ media }: { media: Media }) {
@@ -298,6 +314,92 @@ function MediaMeta({ media }: { media: Media }) {
         </span>
       )}
     </div>
+  );
+}
+
+function PopularMovieScroller({ events }: { events: FeedEvent[] }) {
+  if (events.length === 0) {
+    return <p>No TMDB popular movies loaded this week.</p>;
+  }
+
+  return (
+    <section>
+      <h2 style={{ marginTop: 0 }}>Popular This Week</h2>
+
+      <div
+        style={{
+          display: "flex",
+          gap: 16,
+          overflowX: "auto",
+          paddingBottom: 18,
+          scrollSnapType: "x mandatory",
+        }}
+      >
+        {events.slice(0, 20).map((event) => {
+          const media = event.entry.media;
+          const mediaHref = getMediaHref(media, "popular");
+
+          return (
+            <a
+              key={`${event.id}-${media.externalId || media.id}`}
+              href={mediaHref}
+              style={{
+                width: 160,
+                flex: "0 0 auto",
+                color: "inherit",
+                textDecoration: "none",
+                scrollSnapAlign: "start",
+              }}
+            >
+              {media.coverUrl ? (
+                <img
+                  src={media.coverUrl}
+                  alt={media.title}
+                  loading="lazy"
+                  decoding="async"
+                  style={{
+                    width: 160,
+                    height: 240,
+                    objectFit: "cover",
+                    borderRadius: 8,
+                    border: "1px solid #ccc",
+                    background: "#eee",
+                    display: "block",
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: 160,
+                    height: 240,
+                    border: "1px solid #ccc",
+                    borderRadius: 8,
+                    background: "#eee",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 12,
+                  }}
+                >
+                  No cover
+                </div>
+              )}
+
+              <strong
+                style={{
+                  display: "block",
+                  marginTop: 8,
+                  fontSize: 15,
+                  lineHeight: 1.2,
+                }}
+              >
+                {media.title}
+              </strong>
+            </a>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -621,85 +723,90 @@ export default function FeedPage() {
         <p>{getEmptyMessage(scope)}</p>
       )}
 
-      <div style={{ display: "grid", gap: 16 }}>
-        {events.map((event) => {
-          const media = event.entry.media;
-          const user = event.entry.user;
-          const reviewText = event.bodyText || event.entry.reviewText;
+      {scope === "popular" ? (
+        <PopularMovieScroller events={events} />
+      ) : (
+        <div style={{ display: "grid", gap: 16 }}>
+          {events.map((event) => {
+            const media = event.entry.media;
+            const user = event.entry.user;
+            const reviewText = event.bodyText || event.entry.reviewText;
+            const mediaHref = getMediaHref(media, scope);
 
-          return (
-            <article
-              key={event.id}
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: 12,
-                padding: 16,
-                display: "flex",
-                gap: 18,
-                alignItems: "flex-start",
-                background: "white",
-              }}
-            >
-              <a href={`/media/${media.id}`} style={{ textDecoration: "none" }}>
-                <MediaCoverCard media={media} />
-              </a>
+            return (
+              <article
+                key={`${event.id}-${media.externalId || media.id}`}
+                style={{
+                  border: "1px solid #ddd",
+                  borderRadius: 12,
+                  padding: 16,
+                  display: "flex",
+                  gap: 18,
+                  alignItems: "flex-start",
+                  background: "white",
+                }}
+              >
+                <a href={mediaHref} style={{ textDecoration: "none" }}>
+                  <MediaCoverCard media={media} />
+                </a>
 
-              <div style={{ flex: 1 }}>
-                <div style={{ marginBottom: 8 }}>
-                  <a
-                    href={`/profiles/${user.username}`}
-                    style={{ color: "inherit" }}
-                  >
-                    <strong>
-                      {user.displayName || user.username || "Unknown user"}
-                    </strong>
-                  </a>{" "}
-                  {scope === "popular" ? "popularly logged" : formatEventType(event.eventType)}{" "}
-                  <a href={`/media/${media.id}`}>
-                    <strong>{media.title}</strong>
-                  </a>
-                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ marginBottom: 8 }}>
+                    <a
+                      href={`/profiles/${user.username}`}
+                      style={{ color: "inherit" }}
+                    >
+                      <strong>
+                        {user.displayName || user.username || "Unknown user"}
+                      </strong>
+                    </a>{" "}
+                    {formatEventType(event.eventType)}{" "}
+                    <a href={mediaHref}>
+                      <strong>{media.title}</strong>
+                    </a>
+                  </div>
 
-                <MediaMeta media={media} />
+                  <MediaMeta media={media} />
 
-                {event.ratingValue !== null && (
-                  <p style={{ marginTop: 12, marginBottom: 0 }}>
-                    Rating: <strong>{event.ratingValue}/10</strong>
-                  </p>
-                )}
+                  {event.ratingValue !== null && (
+                    <p style={{ marginTop: 12, marginBottom: 0 }}>
+                      Rating: <strong>{event.ratingValue}/10</strong>
+                    </p>
+                  )}
 
-                {reviewText && (
-                  <p
+                  {reviewText && (
+                    <p
+                      style={{
+                        marginTop: 12,
+                        whiteSpace: "pre-wrap",
+                        lineHeight: 1.45,
+                      }}
+                    >
+                      {reviewText}
+                    </p>
+                  )}
+
+                  <div
                     style={{
                       marginTop: 12,
-                      whiteSpace: "pre-wrap",
-                      lineHeight: 1.45,
+                      color: "#777",
+                      fontSize: 13,
                     }}
                   >
-                    {reviewText}
-                  </p>
-                )}
+                    {formatDate(event.createdAt)}
+                  </div>
 
-                <div
-                  style={{
-                    marginTop: 12,
-                    color: "#777",
-                    fontSize: 13,
-                  }}
-                >
-                  {formatDate(event.createdAt)}
+                  <div style={{ marginTop: 12 }}>
+                    <a href={mediaHref}>View Media</a>
+                    {" | "}
+                    <a href={`/profiles/${user.username}`}>View Profile</a>
+                  </div>
                 </div>
-
-                <div style={{ marginTop: 12 }}>
-                  <a href={`/media/${media.id}`}>View Media</a>
-                  {" | "}
-                  <a href={`/profiles/${user.username}`}>View Profile</a>
-                </div>
-              </div>
-            </article>
-          );
-        })}
-      </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
     </main>
   );
 }
