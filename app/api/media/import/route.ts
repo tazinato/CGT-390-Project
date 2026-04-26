@@ -244,6 +244,24 @@ export async function POST(request: Request) {
       );
     }
 
+        const existingExternalRef = await prisma.mediaExternalRef.findFirst({
+      where: {
+        provider: provider as any,
+        externalId: String(externalId),
+      },
+      include: {
+        media: true,
+      },
+    });
+
+    if (existingExternalRef?.media) {
+      return NextResponse.json({
+        media: existingExternalRef.media,
+        mediaId: existingExternalRef.media.id,
+        alreadyImported: true,
+      });
+    }
+
     const existing = await prisma.mediaExternalRef.findUnique({
       where: {
         provider_externalId: {
