@@ -1,3 +1,5 @@
+import MediaRow from "@/components/MediaRow";
+
 export default function Profile() {
   return (
     <div>
