@@ -144,36 +144,51 @@ export default function MediaActions({
     setMessage("");
 
     try {
-      if (!currentUser?.id) {
+      const meResponse = await fetch("/api/auth/me", {
+        cache: "no-store",
+      });
+
+      const meData = await safeJson(meResponse);
+      const resolvedUserId = currentUser?.id || meData?.user?.id || "";
+
+      if (!resolvedUserId) {
         throw new Error("Please log in to add, rate, or review this.");
       }
 
-      const numericMediaId = Number(mediaId);
+      const pathMediaId =
+        typeof window !== "undefined"
+          ? window.location.pathname.split("/").filter(Boolean).pop()
+          : "";
+
+      const numericMediaId = Number(pathMediaId);
 
       if (!Number.isInteger(numericMediaId) || numericMediaId <= 0) {
         throw new Error("Invalid media item.");
       }
+
+      const payload = {
+        userId: resolvedUserId,
+        mediaId: numericMediaId,
+        status: nextStatus,
+        ratingValue: rating || null,
+        reviewText: review.trim() || null,
+      };
 
       const response = await fetch("/api/entries", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          userId: currentUser.id,
-          mediaId: numericMediaId,
-          status: nextStatus,
-          ratingValue: rating || null,
-          reviewText: review.trim() || null,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await safeJson(response);
 
       if (!response.ok) {
-        throw new Error(data?.error || "Failed to save entry.");
+        throw new Error(data?.error || data?.message || "Failed to save entry.");
       }
 
+      setCurrentUser(meData?.user || currentUser);
       setStatus(nextStatus);
       setMessage("Saved.");
     } catch (error) {
