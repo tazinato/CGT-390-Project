@@ -1,89 +1,122 @@
-import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+
+type TmdbMovie = {
+  id: number;
+  title?: string;
+  name?: string;
+  overview?: string;
+  release_date?: string;
+  poster_path?: string | null;
+  backdrop_path?: string | null;
+  vote_average?: number;
+  vote_count?: number;
+  popularity?: number;
+};
+
+function tmdbImage(path: string | null | undefined) {
+  if (!path) return null;
+  return `https://image.tmdb.org/t/p/w500${path}`;
+}
+
+async function tmdbFetch(path: string) {
+  const accessToken = process.env.TMDB_ACCESS_TOKEN;
+  const apiKey = process.env.TMDB_API_KEY;
+
+  const url = new URL(`https://api.themoviedb.org/3/${path}`);
+
+  const headers: Record<string, string> = {
+    accept: "application/json",
+  };
+
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  } else if (apiKey) {
+    url.searchParams.set("api_key", apiKey);
+  } else {
+    throw new Error("TMDB_ACCESS_TOKEN or TMDB_API_KEY is missing.");
+  }
+
+  const response = await fetch(url.toString(), {
+    headers,
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    throw new Error(`TMDB popular request failed: ${response.status} ${body}`);
+  }
+
+  return response.json();
+}
 
 export async function GET() {
   try {
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
+    const data = await tmdbFetch("trending/movie/week?language=en-US");
+    const movies: TmdbMovie[] = Array.isArray(data?.results)
+      ? data.results
+      : [];
 
-    const entries = await prisma.userMediaEntry.findMany({
-      where: {
-        updatedAt: {
-          gte: weekAgo,
-        },
-      },
-      include: {
-        user: true,
-        media: {
-          include: {
-            movieDetails: true,
-            showDetails: true,
-            bookDetails: true,
-            albumDetails: true,
-            gameDetails: true,
-          },
-        },
-      },
-      orderBy: {
-        updatedAt: "desc",
-      },
-      take: 200,
-    });
-
-    const scoreByMediaId = new Map<number, number>();
-
-    for (const entry of entries) {
-      const mediaId = entry.media.id;
-      scoreByMediaId.set(mediaId, (scoreByMediaId.get(mediaId) || 0) + 1);
-    }
-
-    const bestEntryByMediaId = new Map<number, (typeof entries)[number]>();
-
-    for (const entry of entries) {
-      const mediaId = entry.media.id;
-
-      if (!bestEntryByMediaId.has(mediaId)) {
-        bestEntryByMediaId.set(mediaId, entry);
-      }
-    }
-
-    const popularEvents = [...bestEntryByMediaId.values()]
-      .sort((a, b) => {
-        const aScore = scoreByMediaId.get(a.media.id) || 0;
-        const bScore = scoreByMediaId.get(b.media.id) || 0;
-
-        return bScore - aScore;
-      })
-      .slice(0, 50)
-      .map((entry) => {
-        const score = scoreByMediaId.get(entry.media.id) || 1;
+    const popularMovies = movies
+      .filter((movie) => movie.id && movie.title)
+      .filter((movie) => (movie.vote_count ?? 0) >= 100)
+      .slice(0, 20)
+      .map((movie, index) => {
+        const rating =
+          typeof movie.vote_average === "number"
+            ? Math.round(movie.vote_average)
+            : null;
 
         return {
-          id: entry.id,
-          eventType: "UPDATED",
-          bodyText: `${score} activity ${score === 1 ? "entry" : "entries"} this week`,
-          ratingValue: entry.ratingValue,
-          createdAt: entry.updatedAt,
+          id: movie.id,
+          eventType: "POPULAR",
+          bodyText: movie.overview || "Popular on TMDB this week.",
+          ratingValue: rating,
+          createdAt: new Date().toISOString(),
           entry: {
-            id: entry.id,
-            status: entry.status,
-            reviewText: entry.reviewText,
-            user: entry.user,
-            media: entry.media,
+            id: movie.id,
+            status: "POPULAR",
+            reviewText: movie.overview || null,
+            user: {
+              id: "tmdb",
+              username: "tmdb",
+              displayName: "TMDB",
+              avatarUrl: null,
+            },
+            media: {
+              id: movie.id,
+              provider: "TMDB",
+              externalId: String(movie.id),
+              type: "MOVIE",
+              title: movie.title || movie.name || "Untitled",
+              releaseDate: movie.release_date || null,
+              coverUrl: tmdbImage(movie.poster_path),
+              backdropUrl: tmdbImage(movie.backdrop_path),
+              movieDetails: {
+                runtimeMinutes: null,
+              },
+              showDetails: null,
+              bookDetails: null,
+              albumDetails: null,
+              gameDetails: null,
+              tmdbRank: index + 1,
+              tmdbVoteAverage: movie.vote_average ?? null,
+              tmdbVoteCount: movie.vote_count ?? null,
+              tmdbPopularity: movie.popularity ?? null,
+            },
           },
         };
       });
 
-    return NextResponse.json(popularEvents);
+    return NextResponse.json(popularMovies);
   } catch (error) {
-    console.error("Popular this week error:", error);
+    console.error("TMDB popular this week error:", error);
 
     return NextResponse.json(
       {
         error:
           error instanceof Error
             ? error.message
-            : "Failed to load popular this week.",
+            : "Failed to load TMDB popular movies.",
       },
       { status: 500 }
     );
