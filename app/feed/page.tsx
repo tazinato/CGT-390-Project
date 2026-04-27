@@ -126,7 +126,7 @@ function formatDuration(seconds: number | null | undefined) {
 
 function getEmptyMessage(scope: FeedScope) {
   if (scope === "popular") {
-    return "No popular movies, albums, or books loaded yet.";
+    return "No popular movies, shows, albums, or books loaded yet.";
   }
 
   if (scope === "friends") {
@@ -142,9 +142,11 @@ function getEmptyMessage(scope: FeedScope) {
 
 function getMediaHref(media: Media, scope: FeedScope) {
   if (scope === "popular" && media.provider === "TMDB" && media.externalId) {
+    const type = media.type === "SHOW" ? "SHOW" : "MOVIE";
+
     return `/media/import?provider=TMDB&externalId=${encodeURIComponent(
       media.externalId
-    )}&type=MOVIE`;
+    )}&type=${type}`;
   }
 
   if (scope === "popular" && media.provider === "SPOTIFY" && media.externalId) {
@@ -341,6 +343,92 @@ function PopularMovieScroller({ events }: { events: FeedEvent[] }) {
   return (
     <section>
       <h2 style={{ marginTop: 0 }}>Popular This Week</h2>
+
+      <div
+        style={{
+          display: "flex",
+          gap: 16,
+          overflowX: "auto",
+          paddingBottom: 18,
+          scrollSnapType: "x mandatory",
+        }}
+      >
+        {events.map((event) => {
+          const media = event.entry.media;
+          const mediaHref = getMediaHref(media, "popular");
+
+          return (
+            <a
+              key={`${event.id}-${media.externalId || media.id}`}
+              href={mediaHref}
+              style={{
+                width: 160,
+                flex: "0 0 auto",
+                color: "inherit",
+                textDecoration: "none",
+                scrollSnapAlign: "start",
+              }}
+            >
+              {media.coverUrl ? (
+                <img
+                  src={media.coverUrl}
+                  alt={media.title}
+                  loading="lazy"
+                  decoding="async"
+                  style={{
+                    width: 160,
+                    height: 240,
+                    objectFit: "cover",
+                    borderRadius: 8,
+                    border: "1px solid #ccc",
+                    background: "#eee",
+                    display: "block",
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: 160,
+                    height: 240,
+                    border: "1px solid #ccc",
+                    borderRadius: 8,
+                    background: "#eee",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 12,
+                  }}
+                >
+                  No cover
+                </div>
+              )}
+
+              <strong
+                style={{
+                  display: "block",
+                  marginTop: 8,
+                  fontSize: 15,
+                  lineHeight: 1.2,
+                }}
+              >
+                {media.title}
+              </strong>
+            </a>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function PopularTvScroller({ events }: { events: FeedEvent[] }) {
+  if (events.length === 0) {
+    return <p>No TMDB popular TV loaded this week.</p>;
+  }
+
+  return (
+    <section style={{ marginTop: 34 }}>
+      <h2 style={{ marginTop: 0 }}>Popular TV This Week</h2>
 
       <div
         style={{
@@ -659,6 +747,7 @@ export default function FeedPage() {
 
   const [events, setEvents] = useState<FeedEvent[]>([]);
   const [popularAlbumEvents, setPopularAlbumEvents] = useState<FeedEvent[]>([]);
+  const [popularTvEvents, setPopularTvEvents] = useState<FeedEvent[]>([]);
   const [popularBookEvents, setPopularBookEvents] = useState<FeedEvent[]>([]);
   const [scope, setScope] = useState<FeedScope>("all");
   const [loading, setLoading] = useState(true);
@@ -702,10 +791,14 @@ export default function FeedPage() {
         // shows All/Friends/Mine activity while external rows are loading.
         setEvents([]);
         setPopularAlbumEvents([]);
+        setPopularTvEvents([]);
         setPopularBookEvents([]);
 
-        const [movieRes, albumRes, bookRes] = await Promise.all([
+        const [movieRes, tvRes, albumRes, bookRes] = await Promise.all([
           fetch("/api/feed/popular-this-week", {
+            cache: "no-store",
+          }),
+          fetch("/api/feed/popular-tv-this-week", {
             cache: "no-store",
           }),
           fetch("/api/feed/popular-new-albums", {
@@ -717,6 +810,7 @@ export default function FeedPage() {
         ]);
 
         const movieData = await safeJson(movieRes);
+        const tvData = await safeJson(tvRes);
         const albumData = await safeJson(albumRes);
         const bookData = await safeJson(bookRes);
 
@@ -737,6 +831,12 @@ export default function FeedPage() {
           setEvents(movieData);
         }
 
+        if (!tvRes.ok || !Array.isArray(tvData)) {
+          setPopularTvEvents([]);
+        } else {
+          setPopularTvEvents(tvData);
+        }
+
         if (!albumRes.ok || !Array.isArray(albumData)) {
           setPopularAlbumEvents([]);
         } else {
@@ -753,6 +853,7 @@ export default function FeedPage() {
       }
 
       setPopularAlbumEvents([]);
+      setPopularTvEvents([]);
       setPopularBookEvents([]);
 
       const res = await fetch(`/api/feed?${params.toString()}`, {
@@ -815,6 +916,7 @@ export default function FeedPage() {
     if (!user) {
       setEvents([]);
       setPopularAlbumEvents([]);
+      setPopularTvEvents([]);
       setPopularBookEvents([]);
       setLoading(false);
       return;
@@ -999,6 +1101,7 @@ export default function FeedPage() {
       {scope === "popular" ? (
         <>
           <PopularMovieScroller events={events} />
+          <PopularTvScroller events={popularTvEvents} />
           <PopularAlbumScroller events={popularAlbumEvents} />
           <PopularBookScroller events={popularBookEvents} />
         </>
