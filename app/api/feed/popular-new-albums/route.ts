@@ -17,9 +17,6 @@ type SpotifyAlbum = {
     id?: string;
     name?: string;
   }>;
-  external_urls?: {
-    spotify?: string;
-  };
 };
 
 async function getSpotifyAccessToken() {
@@ -62,62 +59,85 @@ function getBestSpotifyImage(images: SpotifyImage[] | null | undefined) {
   return [...images].sort((a, b) => {
     const aSize = a.width ?? a.height ?? 0;
     const bSize = b.width ?? b.height ?? 0;
+
     return bSize - aSize;
   })[0]?.url ?? null;
+}
+
+async function searchSpotifyAlbums(token: string, query: string) {
+  const url = new URL("https://api.spotify.com/v1/search");
+
+  url.searchParams.set("q", query);
+  url.searchParams.set("type", "album");
+  url.searchParams.set("market", "US");
+  url.searchParams.set("limit", "20");
+
+  const response = await fetch(url.toString(), {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+    next: {
+      revalidate: 3600,
+    },
+  });
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    throw new Error(`Spotify album search failed: ${response.status} ${body}`);
+  }
+
+  const data = await response.json();
+
+  return Array.isArray(data?.albums?.items)
+    ? (data.albums.items as SpotifyAlbum[])
+    : [];
 }
 
 export async function GET() {
   try {
     const token = await getSpotifyAccessToken();
 
-    const url = new URL("https://api.spotify.com/v1/browse/new-releases");
-    url.searchParams.set("country", "US");
-    url.searchParams.set("limit", "40");
+    const currentYear = new Date().getFullYear();
 
-    const response = await fetch(url.toString(), {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      },
-      next: {
-        revalidate: 3600,
-      },
-    });
+    const queries = [
+      `year:${currentYear}`,
+      `year:${currentYear - 1}`,
+      `tag:new`,
+      `album`,
+    ];
 
-    if (!response.ok) {
-      const body = await response.text().catch(() => "");
-      throw new Error(
-        `Spotify new releases request failed: ${response.status} ${body}`
-      );
-    }
+    const pages = await Promise.all(
+      queries.map((query) => searchSpotifyAlbums(token, query))
+    );
 
-    const data = await response.json();
-    const albums: SpotifyAlbum[] = Array.isArray(data?.albums?.items)
-      ? data.albums.items
-      : [];
+    const albums = pages.flat();
 
     const seen = new Set<string>();
 
     const popularAlbums = albums
       .filter((album) => album.id && album.name)
+      .filter((album) => album.album_type !== "single")
       .filter((album) => {
-        const key = album.id;
-        if (seen.has(key)) return false;
-        seen.add(key);
+        if (seen.has(album.id)) return false;
+
+        seen.add(album.id);
         return true;
       })
       .slice(0, 40)
       .map((album, index) => {
         const artists =
-          album.artists?.map((artist) => artist.name).filter(Boolean) ?? [];
+          album.artists
+            ?.map((artist) => artist.name)
+            .filter((name): name is string => Boolean(name)) ?? [];
 
         return {
           id: index + 1,
           eventType: "POPULAR",
           bodyText:
             artists.length > 0
-              ? `New album by ${artists.join(", ")}.`
-              : "New album on Spotify.",
+              ? `Album by ${artists.join(", ")}.`
+              : "Album on Spotify.",
           ratingValue: null,
           createdAt: new Date().toISOString(),
           entry: {
@@ -148,7 +168,6 @@ export async function GET() {
                   artists.length > 0 ? artists.join(", ") : null,
               },
               gameDetails: null,
-              spotifyRank: index + 1,
             },
           },
         };
