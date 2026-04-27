@@ -29,24 +29,11 @@ function NavLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-async function safeJson(res: Response) {
-  const text = await res.text();
-
-  if (!text) return null;
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    return null;
-  }
-}
-
 function readCachedUser() {
   if (typeof window === "undefined") return null;
 
   try {
     const cached = window.sessionStorage.getItem(AUTH_CACHE_KEY);
-
     if (!cached) return null;
 
     return JSON.parse(cached) as CurrentUser | null;
@@ -55,61 +42,25 @@ function readCachedUser() {
   }
 }
 
-function writeCachedUser(user: CurrentUser | null) {
-  if (typeof window === "undefined") return;
-
-  try {
-    if (user) {
-      window.sessionStorage.setItem(AUTH_CACHE_KEY, JSON.stringify(user));
-    } else {
-      window.sessionStorage.removeItem(AUTH_CACHE_KEY);
-    }
-  } catch {
-    // Ignore storage failures.
-  }
-}
-
 export default function NavBar() {
   const router = useRouter();
 
-  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(() =>
-    readCachedUser()
-  );
-  const [authChecked, setAuthChecked] = useState(false);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [query, setQuery] = useState("");
 
   useEffect(() => {
-    let cancelled = false;
+    setCurrentUser(readCachedUser());
 
-    async function loadCurrentUser() {
-      try {
-        const res = await fetch("/api/auth/me", {
-          cache: "no-store",
-        });
-
-        const data = await safeJson(res);
-        const nextUser = res.ok && data?.user ? (data.user as CurrentUser) : null;
-
-        if (!cancelled) {
-          setCurrentUser(nextUser);
-          writeCachedUser(nextUser);
-        }
-      } catch {
-        if (!cancelled) {
-          setCurrentUser(null);
-          writeCachedUser(null);
-        }
-      } finally {
-        if (!cancelled) {
-          setAuthChecked(true);
-        }
-      }
+    function handleAuthChanged() {
+      setCurrentUser(readCachedUser());
     }
 
-    loadCurrentUser();
+    window.addEventListener("media-app-auth-changed", handleAuthChanged);
+    window.addEventListener("storage", handleAuthChanged);
 
     return () => {
-      cancelled = true;
+      window.removeEventListener("media-app-auth-changed", handleAuthChanged);
+      window.removeEventListener("storage", handleAuthChanged);
     };
   }, []);
 
@@ -184,18 +135,15 @@ export default function NavBar() {
       >
         {currentUser ? (
           <>
-            <NavLink
-              href={`/profiles/${currentUser.username}`}
-              label={currentUser.displayName || `@${currentUser.username}`}
-            />
+            <NavLink href={`/profiles/${currentUser.username}`} label="Profile" />
             <NavLink href="/logout" label="Log Out" />
           </>
-        ) : authChecked ? (
+        ) : (
           <>
             <NavLink href="/login" label="Log In" />
             <NavLink href="/signup" label="Sign Up" />
           </>
-        ) : null}
+        )}
       </div>
     </nav>
   );

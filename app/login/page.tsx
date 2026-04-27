@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+const AUTH_CACHE_KEY = "media_app_current_user_cache";
 
 async function safeJson(res: Response) {
   const text = await res.text();
@@ -15,6 +18,15 @@ async function safeJson(res: Response) {
       error: "Response was not valid JSON.",
       raw: text,
     };
+  }
+}
+
+function cacheAuthUser(user: unknown) {
+  try {
+    window.sessionStorage.setItem(AUTH_CACHE_KEY, JSON.stringify(user));
+    window.dispatchEvent(new Event("media-app-auth-changed"));
+  } catch {
+    // Ignore storage failures.
   }
 }
 
@@ -60,6 +72,7 @@ export default function LoginPage() {
         return;
       }
 
+      cacheAuthUser(data.user);
       router.push(`/profiles/${data.user.username}`);
     } catch (error) {
       setMessage(
@@ -111,7 +124,7 @@ export default function LoginPage() {
       </form>
 
       <p style={{ marginTop: 20 }}>
-        Need an account? <a href="/signup">Sign up</a>
+        Need an account? <Link href="/signup">Sign up</Link>
       </p>
 
       {message && (

@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+const AUTH_CACHE_KEY = "media_app_current_user_cache";
 
 async function safeJson(res: Response) {
   const text = await res.text();
@@ -15,6 +18,15 @@ async function safeJson(res: Response) {
       error: "Response was not valid JSON.",
       raw: text,
     };
+  }
+}
+
+function cacheAuthUser(user: unknown) {
+  try {
+    window.sessionStorage.setItem(AUTH_CACHE_KEY, JSON.stringify(user));
+    window.dispatchEvent(new Event("media-app-auth-changed"));
+  } catch {
+    // Ignore storage failures.
   }
 }
 
@@ -62,6 +74,7 @@ export default function SignupPage() {
         return;
       }
 
+      cacheAuthUser(data.user);
       router.push(`/profiles/${data.user.username}`);
     } catch (error) {
       setMessage(
@@ -84,7 +97,8 @@ export default function SignupPage() {
       <h1>Create Account</h1>
 
       <p style={{ color: "#555" }}>
-        Sign up to create a profile, log media, add friends, and use your own feed.
+        Sign up to create a profile, log media, add friends, and use your own
+        feed.
       </p>
 
       <form onSubmit={handleSubmit}>
@@ -133,7 +147,7 @@ export default function SignupPage() {
       </form>
 
       <p style={{ marginTop: 20 }}>
-        Already have an account? <a href="/login">Log in</a>
+        Already have an account? <Link href="/login">Log in</Link>
       </p>
 
       {message && (

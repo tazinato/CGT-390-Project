@@ -3,8 +3,13 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+
 }
+
 
 enum MediaType {
   MOVIE
@@ -97,6 +102,9 @@ model UserProfile {
   friendshipsAsA      Friendship[] @relation("FriendshipUserA")
   friendshipsAsB      Friendship[] @relation("FriendshipUserB")
   friendshipActions   Friendship[] @relation("FriendshipActionUser")
+
+  @@index([createdAt])
+  @@index([updatedAt])
 }
 
 model AuthCredential {
@@ -139,6 +147,10 @@ model BlobAsset {
 
   avatarForProfiles UserProfile[] @relation("ProfileAvatar")
   bannerForProfiles UserProfile[] @relation("ProfileBanner")
+
+  @@index([uploadedById])
+  @@index([purpose])
+  @@index([createdAt])
 }
 
 model MediaItem {
@@ -172,6 +184,8 @@ model MediaItem {
   @@index([type])
   @@index([title])
   @@index([releaseDate])
+  @@index([updatedAt])
+  @@index([type, updatedAt])
 }
 
 model MovieDetails {
@@ -207,6 +221,8 @@ model AlbumDetails {
   primaryArtistName String?
 
   media MediaItem @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@index([primaryArtistName])
 }
 
 model GameDetails {
@@ -242,8 +258,15 @@ model UserMediaEntry {
   logEvents        UserMediaLogEvent[]
 
   @@unique([userId, mediaId])
-  @@index([userId, lastActivityAt])
+  @@index([userId])
   @@index([mediaId])
+  @@index([status])
+  @@index([lastActivityAt])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@index([userId, lastActivityAt])
+  @@index([userId, updatedAt])
+  @@index([mediaId, updatedAt])
 }
 
 model UserMediaLogEvent {
@@ -268,6 +291,10 @@ model UserMediaLogEvent {
   @@index([mediaId])
   @@index([userId])
   @@index([createdAt])
+  @@index([eventType])
+  @@index([userId, createdAt])
+  @@index([mediaId, createdAt])
+  @@index([entryId, createdAt])
 }
 
 model UserProfileFavorite {
@@ -282,6 +309,8 @@ model UserProfileFavorite {
 
   @@id([userId, slotNumber])
   @@unique([userId, mediaId])
+  @@index([mediaId])
+  @@index([updatedAt])
 }
 
 model Friendship {
@@ -304,6 +333,12 @@ model Friendship {
   @@index([userAId])
   @@index([userBId])
   @@index([actionUserId])
+  @@index([status])
+  @@index([userAId, status])
+  @@index([userBId, status])
+  @@index([actionUserId, status])
+  @@index([createdAt])
+  @@index([updatedAt])
 }
 
 model Genre {
@@ -321,6 +356,7 @@ model MediaGenre {
   genre   Genre     @relation(fields: [genreId], references: [id], onDelete: Cascade)
 
   @@id([mediaId, genreId])
+  @@index([genreId])
 }
 
 model Person {
@@ -333,6 +369,9 @@ model Person {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([fullName])
+  @@index([updatedAt])
 }
 
 model MediaCredit {
@@ -348,6 +387,9 @@ model MediaCredit {
 
   @@index([mediaId])
   @@index([personId])
+  @@index([creditRole])
+  @@index([personId, creditRole])
+  @@index([mediaId, billingOrder])
 }
 
 model MediaExternalRef {
@@ -365,4 +407,8 @@ model MediaExternalRef {
 
   @@unique([provider, externalId])
   @@index([mediaId])
+  @@index([provider])
+  @@index([externalId])
+  @@index([provider, externalId])
+  @@index([lastSyncedAt])
 }
