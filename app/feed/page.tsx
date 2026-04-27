@@ -151,6 +151,43 @@ function formatDuration(seconds: number | null | undefined) {
   return `${minutes} min`;
 }
 
+const popularLoadingMessages = [
+  "Loading a universe of media...",
+  "Find your new all-time favorite...",
+  "Entertainment incoming...",
+];
+
+function PopularLoadingMessage({ loading }: { loading: boolean }) {
+  const [messageIndex, setMessageIndex] = useState(0);
+
+  useEffect(() => {
+    if (!loading) return;
+
+    const interval = window.setInterval(() => {
+      setMessageIndex(
+        (current) => (current + 1) % popularLoadingMessages.length
+      );
+    }, 1500);
+
+    return () => window.clearInterval(interval);
+  }, [loading]);
+
+  if (!loading) return null;
+
+  return (
+    <p
+      style={{
+        color: "#666",
+        fontWeight: 700,
+        marginTop: 10,
+        marginBottom: 20,
+      }}
+    >
+      {popularLoadingMessages[messageIndex]}
+    </p>
+  );
+}
+
 function getEmptyMessage(scope: FeedScope) {
   if (scope === "popular") {
     return "No popular movies, shows, albums, books, or games loaded yet.";
@@ -953,17 +990,6 @@ export default function FeedPage() {
         const gameData = await safeJson(gameRes);
 
         if (!movieRes.ok || !Array.isArray(movieData)) {
-          setResult(
-            JSON.stringify(
-              {
-                status: movieRes.status,
-                error: "Failed to load popular movies.",
-                response: movieData,
-              },
-              null,
-              2
-            )
-          );
           setEvents([]);
         } else {
           setEvents(movieData);
@@ -993,6 +1019,7 @@ export default function FeedPage() {
           setPopularGameEvents(gameData);
         }
 
+        setResult("");
         return;
       }
 
@@ -1186,7 +1213,7 @@ export default function FeedPage() {
         </button>
       </div>
 
-      {result && (
+      {result && scope !== "popular" ? (
         <pre
           style={{
             whiteSpace: "pre-wrap",
@@ -1198,7 +1225,7 @@ export default function FeedPage() {
         >
           {result}
         </pre>
-      )}
+      ) : null}
 
       {!loading && events.length === 0 && !result && (
         <p>{getEmptyMessage(scope)}</p>
@@ -1206,6 +1233,7 @@ export default function FeedPage() {
 
       {scope === "popular" ? (
         <>
+          <PopularLoadingMessage loading={loading} />
           <PopularMovieScroller events={events} />
           <PopularTvScroller events={popularTvEvents} />
           <PopularAlbumScroller events={popularAlbumEvents} />
