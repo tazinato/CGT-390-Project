@@ -1032,12 +1032,8 @@ export default function FeedPage() {
     const user = await loadCurrentUser();
 
     if (!user) {
-      setEvents([]);
-      setPopularAlbumEvents([]);
-      setPopularTvEvents([]);
-      setPopularBookEvents([]);
-      setPopularGameEvents([]);
-      setLoading(false);
+      setScope("popular");
+      await loadFeedForUser("popular");
       return;
     }
 
@@ -1078,23 +1074,34 @@ export default function FeedPage() {
     initializeFeed();
   }, []);
 
-  if (authLoaded && !currentUser) {
-    return (
-      <main style={{ padding: 40, maxWidth: 900 }}>
-        <h1>Feed</h1>
+  return (
+    <main style={{ padding: 40, maxWidth: 900 }}>
+      <h1>Feed</h1>
 
+      {!authLoaded ? (
+        <p style={{ color: "#555" }}>Checking login...</p>
+      ) : currentUser ? (
+        <p style={{ color: "#555" }}>
+          Recent activity for{" "}
+          <strong>
+            {currentUser.displayName || currentUser.username} (@
+            {currentUser.username})
+          </strong>
+          .
+        </p>
+      ) : (
         <div
           style={{
             border: "1px solid #f0b4b4",
             background: "#fff5f5",
             padding: 14,
             borderRadius: 10,
-            marginTop: 16,
+            marginBottom: 20,
           }}
         >
           <p style={{ color: "#900", marginTop: 0 }}>
-            You are not logged in. Log in or create an account to view your
-            feed.
+            You are not logged in. You can still browse popular movies, shows,
+            albums, books, and games. Log in to view All, Friends, or Mine.
           </p>
 
           <a
@@ -1130,26 +1137,7 @@ export default function FeedPage() {
             Sign Up
           </a>
         </div>
-      </main>
-    );
-  }
-
-  return (
-    <main style={{ padding: 40, maxWidth: 900 }}>
-      <h1>Feed</h1>
-
-      {!authLoaded ? (
-        <p style={{ color: "#555" }}>Checking login...</p>
-      ) : currentUser ? (
-        <p style={{ color: "#555" }}>
-          Recent activity for{" "}
-          <strong>
-            {currentUser.displayName || currentUser.username} (@
-            {currentUser.username})
-          </strong>
-          .
-        </p>
-      ) : null}
+      )}
 
       <div
         style={{
@@ -1165,7 +1153,7 @@ export default function FeedPage() {
           value="all"
           activeScope={scope}
           onClick={changeScope}
-          disabled={loading || !currentUser}
+          disabled={loading || (scope !== "popular" && !currentUser)}
         />
 
         <ScopeButton
@@ -1189,7 +1177,7 @@ export default function FeedPage() {
           value="popular"
           activeScope={scope}
           onClick={changeScope}
-          disabled={loading || !currentUser}
+          disabled={loading}
         />
 
         <button
@@ -1202,7 +1190,7 @@ export default function FeedPage() {
             border: "1px solid #ccc",
             background: "white",
             marginLeft: 8,
-            cursor: loading ? "not-allowed" : "pointer",
+            cursor: loading || (scope !== "popular" && !currentUser) ? "not-allowed" : "pointer",
           }}
         >
           {loading ? "Loading..." : "Refresh"}
