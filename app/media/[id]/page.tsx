@@ -202,7 +202,9 @@ async function getTmdbExtras(media: any): Promise<TmdbExtras> {
         Authorization: `Bearer ${token}`,
         accept: "application/json",
       },
-      cache: "no-store",
+      next: {
+        revalidate: 86400,
+      },
     });
 
     if (!res.ok) return null;
