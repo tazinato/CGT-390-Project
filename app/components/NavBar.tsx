@@ -88,7 +88,6 @@ export default function NavBar() {
     >
       <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
         <NavLink href="/" label="Home" />
-        <NavLink href="/feed" label="Feed" />
         <NavLink href="/add-entry" label="Add Entry" />
         <NavLink href="/favorites" label="Favorites" />
         <NavLink href="/friends" label="Friends" />
