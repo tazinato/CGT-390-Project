@@ -126,7 +126,7 @@ function formatDuration(seconds: number | null | undefined) {
 
 function getEmptyMessage(scope: FeedScope) {
   if (scope === "popular") {
-    return "No TMDB popular movies loaded this week.";
+    return "No popular movies or albums loaded yet.";
   }
 
   if (scope === "friends") {
@@ -145,6 +145,12 @@ function getMediaHref(media: Media, scope: FeedScope) {
     return `/media/import?provider=TMDB&externalId=${encodeURIComponent(
       media.externalId
     )}&type=MOVIE`;
+  }
+
+  if (scope === "popular" && media.provider === "SPOTIFY" && media.externalId) {
+    return `/media/import?provider=SPOTIFY&externalId=${encodeURIComponent(
+      media.externalId
+    )}&type=ALBUM`;
   }
 
   return `/media/${media.id}`;
@@ -335,7 +341,7 @@ function PopularMovieScroller({ events }: { events: FeedEvent[] }) {
           scrollSnapType: "x mandatory",
         }}
       >
-        {events.slice(0, 20).map((event) => {
+        {events.map((event) => {
           const media = event.entry.media;
           const mediaHref = getMediaHref(media, "popular");
 
@@ -403,6 +409,106 @@ function PopularMovieScroller({ events }: { events: FeedEvent[] }) {
   );
 }
 
+function PopularAlbumScroller({ events }: { events: FeedEvent[] }) {
+  if (events.length === 0) {
+    return <p>No popular new albums loaded.</p>;
+  }
+
+  return (
+    <section style={{ marginTop: 34 }}>
+      <h2 style={{ marginTop: 0 }}>Popular New Albums</h2>
+
+      <div
+        style={{
+          display: "flex",
+          gap: 16,
+          overflowX: "auto",
+          paddingBottom: 18,
+          scrollSnapType: "x mandatory",
+        }}
+      >
+        {events.map((event) => {
+          const media = event.entry.media;
+          const mediaHref = getMediaHref(media, "popular");
+
+          return (
+            <a
+              key={`${event.id}-${media.externalId || media.id}`}
+              href={mediaHref}
+              style={{
+                width: 160,
+                flex: "0 0 auto",
+                color: "inherit",
+                textDecoration: "none",
+                scrollSnapAlign: "start",
+              }}
+            >
+              {media.coverUrl ? (
+                <img
+                  src={media.coverUrl}
+                  alt={media.title}
+                  loading="lazy"
+                  decoding="async"
+                  style={{
+                    width: 160,
+                    height: 160,
+                    objectFit: "cover",
+                    borderRadius: 8,
+                    border: "1px solid #ccc",
+                    background: "#eee",
+                    display: "block",
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: 160,
+                    height: 160,
+                    border: "1px solid #ccc",
+                    borderRadius: 8,
+                    background: "#eee",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 12,
+                  }}
+                >
+                  No cover
+                </div>
+              )}
+
+              <strong
+                style={{
+                  display: "block",
+                  marginTop: 8,
+                  fontSize: 15,
+                  lineHeight: 1.2,
+                }}
+              >
+                {media.title}
+              </strong>
+
+              {media.albumDetails?.primaryArtistName ? (
+                <span
+                  style={{
+                    display: "block",
+                    marginTop: 3,
+                    fontSize: 13,
+                    color: "#666",
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {media.albumDetails.primaryArtistName}
+                </span>
+              ) : null}
+            </a>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function ScopeButton({
   label,
   value,
@@ -442,6 +548,7 @@ export default function FeedPage() {
   const [authLoaded, setAuthLoaded] = useState(false);
 
   const [events, setEvents] = useState<FeedEvent[]>([]);
+  const [popularAlbumEvents, setPopularAlbumEvents] = useState<FeedEvent[]>([]);
   const [scope, setScope] = useState<FeedScope>("all");
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState("");
@@ -479,12 +586,57 @@ export default function FeedPage() {
         scope: nextScope,
       });
 
-      const feedUrl =
-        nextScope === "popular"
-          ? "/api/feed/popular-this-week"
-          : `/api/feed?${params.toString()}`;
+      if (nextScope === "popular") {
+        const [movieRes, albumRes] = await Promise.all([
+          fetch("/api/feed/popular-this-week", {
+            cache: "no-store",
+          }),
+          fetch("/api/feed/popular-new-albums", {
+            cache: "no-store",
+          }),
+        ]);
 
-      const res = await fetch(feedUrl, {
+        const movieData = await safeJson(movieRes);
+        const albumData = await safeJson(albumRes);
+
+        if (!movieRes.ok || !Array.isArray(movieData)) {
+          setResult(
+            JSON.stringify(
+              {
+                status: movieRes.status,
+                error: "Failed to load popular movies.",
+                response: movieData,
+              },
+              null,
+              2
+            )
+          );
+          return;
+        }
+
+        if (!albumRes.ok || !Array.isArray(albumData)) {
+          setResult(
+            JSON.stringify(
+              {
+                status: albumRes.status,
+                error: "Failed to load popular albums.",
+                response: albumData,
+              },
+              null,
+              2
+            )
+          );
+          return;
+        }
+
+        setEvents(movieData);
+        setPopularAlbumEvents(albumData);
+        return;
+      }
+
+      setPopularAlbumEvents([]);
+
+      const res = await fetch(`/api/feed?${params.toString()}`, {
         cache: "no-store",
       });
 
@@ -543,6 +695,7 @@ export default function FeedPage() {
 
     if (!user) {
       setEvents([]);
+      setPopularAlbumEvents([]);
       setLoading(false);
       return;
     }
@@ -724,7 +877,10 @@ export default function FeedPage() {
       )}
 
       {scope === "popular" ? (
-        <PopularMovieScroller events={events} />
+        <>
+          <PopularMovieScroller events={events} />
+          <PopularAlbumScroller events={popularAlbumEvents} />
+        </>
       ) : (
         <div style={{ display: "grid", gap: 16 }}>
           {events.map((event) => {
