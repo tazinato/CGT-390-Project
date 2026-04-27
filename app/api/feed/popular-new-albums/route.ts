@@ -39,9 +39,7 @@ async function getSpotifyAccessToken() {
       "Content-Type": "application/x-www-form-urlencoded",
     },
     body: "grant_type=client_credentials",
-    next: {
-      revalidate: 3300,
-    },
+    cache: "no-store",
   });
 
   if (!response.ok) {

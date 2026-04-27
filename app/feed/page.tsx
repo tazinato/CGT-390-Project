@@ -587,6 +587,11 @@ export default function FeedPage() {
       });
 
       if (nextScope === "popular") {
+        // Clear old user feed items immediately so the popular tab never
+        // shows All/Friends/Mine activity while external rows are loading.
+        setEvents([]);
+        setPopularAlbumEvents([]);
+
         const [movieRes, albumRes] = await Promise.all([
           fetch("/api/feed/popular-this-week", {
             cache: "no-store",
@@ -611,10 +616,14 @@ export default function FeedPage() {
               2
             )
           );
-          return;
+          setEvents([]);
+        } else {
+          setEvents(movieData);
         }
 
         if (!albumRes.ok || !Array.isArray(albumData)) {
+          setPopularAlbumEvents([]);
+
           setResult(
             JSON.stringify(
               {
@@ -626,11 +635,10 @@ export default function FeedPage() {
               2
             )
           );
-          return;
+        } else {
+          setPopularAlbumEvents(albumData);
         }
 
-        setEvents(movieData);
-        setPopularAlbumEvents(albumData);
         return;
       }
 
