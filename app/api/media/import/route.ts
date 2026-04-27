@@ -661,7 +661,9 @@ export async function POST(request: Request) {
       const details = await getSpotifyAlbumDetails(externalId);
 
       const artists =
-        details.artists?.map((artist) => artist.name).filter(Boolean) ?? [];
+        details.artists
+          ?.map((artist) => artist.name)
+          .filter((name): name is string => Boolean(name)) ?? [];
 
       const primaryArtistName =
         artists.length > 0 ? artists.join(", ") : null;
@@ -690,10 +692,12 @@ export async function POST(request: Request) {
               provider: ExternalProvider.SPOTIFY,
               externalId,
               externalUrl: details.external_urls?.spotify ?? null,
-              rawPayload: {
-                ...details,
-                normalizedArtists: artists,
-              },
+              rawPayload: JSON.parse(
+                JSON.stringify({
+                  ...details,
+                  normalizedArtists: artists,
+                })
+              ),
               lastSyncedAt: new Date(),
             },
           },
