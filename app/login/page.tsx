@@ -2,9 +2,16 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const AUTH_CACHE_KEY = "media_app_current_user_cache";
+
+type PopularItem = {
+  id: string;
+  title: string;
+  type: string;
+  artist?: string | null;
+};
 
 async function safeJson(res: Response) {
   const text = await res.text();
@@ -30,10 +37,96 @@ function cacheAuthUser(user: unknown) {
   }
 }
 
+function getPopularItemsFromFeed(data: any, fallbackType: string): PopularItem[] {
+  if (!Array.isArray(data)) return [];
+
+  return data
+    .map((event: any) => {
+      const media = event?.entry?.media;
+
+      if (!media?.title) return null;
+
+      return {
+        id: String(media.externalId || media.id || event.id || media.title),
+        title: String(media.title),
+        type: String(media.type || fallbackType),
+        artist: media.albumDetails?.primaryArtistName || null,
+      };
+    })
+    .filter(Boolean) as PopularItem[];
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [popularItems, setPopularItems] = useState<PopularItem[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadPopularItems() {
+      const fallbackItems: PopularItem[] = [
+        { id: "movie-1", title: "Popular Movies", type: "MOVIE" },
+        { id: "album-1", title: "New Albums", type: "ALBUM" },
+        { id: "tv-1", title: "Trending TV", type: "SHOW" },
+        { id: "game-1", title: "Popular Games", type: "GAME" },
+      ];
+
+      try {
+        const [moviesRes, albumsRes] = await Promise.allSettled([
+          fetch("/api/feed/popular-this-week", { cache: "no-store" }),
+          fetch("/api/feed/popular-new-albums", { cache: "no-store" }),
+        ]);
+
+        const moviesData =
+          moviesRes.status === "fulfilled"
+            ? await safeJson(moviesRes.value)
+            : null;
+
+        const albumsData =
+          albumsRes.status === "fulfilled"
+            ? await safeJson(albumsRes.value)
+            : null;
+
+        const movieItems = getPopularItemsFromFeed(moviesData, "MOVIE").slice(
+          0,
+          8
+        );
+        const albumItems = getPopularItemsFromFeed(albumsData, "ALBUM").slice(
+          0,
+          8
+        );
+
+        const combined = [...movieItems, ...albumItems];
+
+        if (!cancelled) {
+          setPopularItems(combined.length > 0 ? combined : fallbackItems);
+        }
+      } catch {
+        if (!cancelled) {
+          setPopularItems(fallbackItems);
+        }
+      }
+    }
+
+    loadPopularItems();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const tickerItems = useMemo(() => {
+    if (popularItems.length === 0) {
+      return [
+        { id: "loading-1", title: "Loading popular movies", type: "MOVIE" },
+        { id: "loading-2", title: "Loading popular albums", type: "ALBUM" },
+      ];
+    }
+
+    return [...popularItems, ...popularItems];
+  }, [popularItems]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -83,10 +176,22 @@ export default function LoginPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background:
-          "radial-gradient(circle at top left, #f1f1f1 0, #ffffff 34%, #f7f7f7 100%)",
+        background: "#fff",
       }}
     >
+      <style>
+        {`
+          @keyframes loginTickerScroll {
+            0% {
+              transform: translateX(0);
+            }
+            100% {
+              transform: translateX(-50%);
+            }
+          }
+        `}
+      </style>
+
       <section
         style={{
           width: "100%",
@@ -110,26 +215,21 @@ export default function LoginPage() {
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
+            position: "relative",
+            overflow: "hidden",
           }}
         >
-          <div>
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "7px 11px",
-                border: "1px solid rgba(255,255,255,0.25)",
-                borderRadius: 999,
-                background: "rgba(255,255,255,0.10)",
-                fontSize: 13,
-                fontWeight: 800,
-                marginBottom: 28,
-              }}
-            >
-              Media App
-            </div>
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "radial-gradient(circle at 15% 20%, rgba(255,255,255,0.12), transparent 28%), radial-gradient(circle at 85% 85%, rgba(255,255,255,0.16), transparent 30%)",
+              pointerEvents: "none",
+            }}
+          />
 
+          <div style={{ position: "relative", zIndex: 1 }}>
             <h1
               style={{
                 margin: 0,
@@ -158,39 +258,100 @@ export default function LoginPage() {
 
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-              gap: 10,
+              position: "relative",
+              zIndex: 1,
               marginTop: 34,
             }}
           >
-            {["Reviews", "Favorites", "Friends"].map((label) => (
+            <p
+              style={{
+                margin: "0 0 10px",
+                color: "rgba(255,255,255,0.72)",
+                fontSize: 13,
+                fontWeight: 800,
+                letterSpacing: "0.02em",
+                textTransform: "uppercase",
+              }}
+            >
+              Popular this week
+            </p>
+
+            <div
+              style={{
+                border: "1px solid rgba(255,255,255,0.20)",
+                background: "rgba(255,255,255,0.10)",
+                borderRadius: 20,
+                padding: 12,
+                overflow: "hidden",
+                backdropFilter: "blur(14px)",
+              }}
+            >
               <div
-                key={label}
                 style={{
-                  border: "1px solid rgba(255,255,255,0.22)",
-                  background: "rgba(255,255,255,0.10)",
-                  borderRadius: 18,
-                  padding: 14,
-                  backdropFilter: "blur(14px)",
+                  display: "flex",
+                  width: "max-content",
+                  gap: 10,
+                  animation: "loginTickerScroll 28s linear infinite",
                 }}
               >
-                <strong style={{ display: "block", fontSize: 14 }}>
-                  {label}
-                </strong>
-                <span
-                  style={{
-                    display: "block",
-                    marginTop: 4,
-                    color: "rgba(255,255,255,0.65)",
-                    fontSize: 12,
-                    lineHeight: 1.25,
-                  }}
-                >
-                  Track your taste
-                </span>
+                {tickerItems.map((item, index) => (
+                  <div
+                    key={`${item.id}-${index}`}
+                    style={{
+                      minWidth: 170,
+                      maxWidth: 220,
+                      border: "1px solid rgba(255,255,255,0.18)",
+                      background: "rgba(0,0,0,0.20)",
+                      borderRadius: 16,
+                      padding: "10px 12px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: "block",
+                        color: "rgba(255,255,255,0.58)",
+                        fontSize: 11,
+                        fontWeight: 900,
+                        letterSpacing: "0.04em",
+                        textTransform: "uppercase",
+                        marginBottom: 5,
+                      }}
+                    >
+                      {item.type === "ALBUM" ? "Album" : item.type === "SHOW" ? "TV" : item.type}
+                    </span>
+
+                    <strong
+                      style={{
+                        display: "block",
+                        fontSize: 14,
+                        lineHeight: 1.18,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {item.title}
+                    </strong>
+
+                    {item.artist ? (
+                      <span
+                        style={{
+                          display: "block",
+                          marginTop: 4,
+                          color: "rgba(255,255,255,0.62)",
+                          fontSize: 12,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {item.artist}
+                      </span>
+                    ) : null}
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         </div>
 
