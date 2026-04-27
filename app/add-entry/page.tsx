@@ -1,6 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+
+const AUTH_CACHE_KEY = "media_app_current_user_cache";
 
 type CurrentUser = {
   id: string;
@@ -10,14 +13,17 @@ type CurrentUser = {
   avatarUrl: string | null;
 };
 
+type Source = "local" | "tmdb" | "books" | "spotify" | "rawg";
+type TmdbType = "movie" | "tv";
+type MediaTypeFilter = "ALL" | "MOVIE" | "SHOW" | "BOOK" | "ALBUM" | "GAME";
 type SearchBy =
   | "title"
   | "person"
   | "author"
   | "isbn"
   | "artist"
-  | "studio"
   | "developer";
+type SortBy = "relevance" | "popularity" | "newest" | "oldest" | "rating";
 
 type LocalMediaResult = {
   id: number;
@@ -25,6 +31,7 @@ type LocalMediaResult = {
   type: string;
   releaseDate: string | null;
   coverUrl?: string | null;
+  description?: string | null;
   movieDetails?: {
     runtimeMinutes: number | null;
   } | null;
@@ -51,7 +58,7 @@ type LocalMediaResult = {
 };
 
 type ExternalMediaResult = {
-  provider: "TMDB" | "GOOGLE_BOOKS" | "MUSICBRAINZ" | "RAWG";
+  provider: "TMDB" | "GOOGLE_BOOKS" | "SPOTIFY" | "RAWG";
   externalId: string;
   title: string;
   type: "MOVIE" | "SHOW" | "BOOK" | "ALBUM" | "GAME";
@@ -64,14 +71,38 @@ type ExternalMediaResult = {
   genres?: string[];
   pageCount?: number | null;
   isbn13?: string | null;
-  primaryType?: string | null;
-  secondaryTypes?: string[];
   rating?: number | null;
   metacritic?: number | null;
   playtime?: number | null;
+  voteAverage?: number | null;
+  voteCount?: number | null;
+  popularity?: number | null;
+  spotifyPopularity?: number | null;
+  spotifyArtistFollowers?: number | null;
 };
 
 type MediaResult = LocalMediaResult | ExternalMediaResult;
+
+function readCachedUser() {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const cached = window.sessionStorage.getItem(AUTH_CACHE_KEY);
+    if (!cached) return null;
+    return JSON.parse(cached) as CurrentUser | null;
+  } catch {
+    return null;
+  }
+}
+
+function clearCachedUser() {
+  try {
+    window.sessionStorage.removeItem(AUTH_CACHE_KEY);
+    window.dispatchEvent(new Event("media-app-auth-changed"));
+  } catch {
+    // Ignore storage failures.
+  }
+}
 
 function isExternalMedia(item: MediaResult): item is ExternalMediaResult {
   return "externalId" in item;
@@ -110,6 +141,14 @@ function formatYear(value: string | null) {
   return String(parsed.getFullYear());
 }
 
+function getNumericYear(value: string | null) {
+  const year = formatYear(value);
+  if (!year) return null;
+
+  const numeric = Number(year);
+  return Number.isInteger(numeric) ? numeric : null;
+}
+
 function getExternalKey(item: ExternalMediaResult) {
   return `${item.provider}:${item.externalId}:${item.type}`;
 }
@@ -118,29 +157,12 @@ function getResultKey(item: MediaResult) {
   return isExternalMedia(item) ? getExternalKey(item) : `LOCAL:${item.id}`;
 }
 
-function isSelectedResult(
-  item: MediaResult,
-  selectedMedia: LocalMediaResult | null,
-  selectedExternalKey: string | null
-) {
-  if (!selectedMedia) return false;
-
-  if (isExternalMedia(item)) {
-    return selectedExternalKey === getExternalKey(item);
-  }
-
-  return selectedMedia.id === item.id;
-}
-
-function getSearchOptions(
-  source: "local" | "tmdb" | "books" | "musicbrainz" | "rawg",
-  tmdbType: "movie" | "tv"
-): { value: SearchBy; label: string }[] {
+function getSearchOptions(source: Source, tmdbType: TmdbType) {
   if (source === "tmdb") {
     return [
       { value: "title", label: tmdbType === "tv" ? "TV title" : "Movie title" },
       { value: "person", label: "Actor / director / creator" },
-    ];
+    ] satisfies { value: SearchBy; label: string }[];
   }
 
   if (source === "books") {
@@ -148,27 +170,27 @@ function getSearchOptions(
       { value: "title", label: "Book title" },
       { value: "author", label: "Author" },
       { value: "isbn", label: "ISBN" },
-    ];
+    ] satisfies { value: SearchBy; label: string }[];
   }
 
-  if (source === "musicbrainz") {
+  if (source === "spotify") {
     return [
       { value: "title", label: "Album title" },
       { value: "artist", label: "Artist" },
-    ];
+    ] satisfies { value: SearchBy; label: string }[];
   }
 
   if (source === "rawg") {
     return [
       { value: "title", label: "Game title" },
       { value: "developer", label: "Developer / studio" },
-    ];
+    ] satisfies { value: SearchBy; label: string }[];
   }
 
   return [
     { value: "title", label: "Title" },
     { value: "person", label: "Creator / artist / person" },
-  ];
+  ] satisfies { value: SearchBy; label: string }[];
 }
 
 function getPlaceholder({
@@ -176,8 +198,8 @@ function getPlaceholder({
   tmdbType,
   searchBy,
 }: {
-  source: "local" | "tmdb" | "books" | "musicbrainz" | "rawg";
-  tmdbType: "movie" | "tv";
+  source: Source;
+  tmdbType: TmdbType;
   searchBy: SearchBy;
 }) {
   if (source === "tmdb" && searchBy === "person") {
@@ -202,12 +224,12 @@ function getPlaceholder({
     return "Search books...";
   }
 
-  if (source === "musicbrainz" && searchBy === "artist") {
-    return "Search artist, e.g. Aphex Twin...";
+  if (source === "spotify" && searchBy === "artist") {
+    return "Search artist, e.g. Autechre...";
   }
 
-  if (source === "musicbrainz") {
-    return "Search albums, e.g. Selected Ambient Works...";
+  if (source === "spotify") {
+    return "Search albums...";
   }
 
   if (source === "rawg" && searchBy === "developer") {
@@ -222,7 +244,242 @@ function getPlaceholder({
     return "Search creators/artists/people in local DB...";
   }
 
-  return "Search local media...";
+  return "Search media...";
+}
+
+function getProviderLabel(item: MediaResult) {
+  if (!isExternalMedia(item)) return "Local DB";
+
+  if (item.provider === "TMDB") return "TMDB";
+  if (item.provider === "GOOGLE_BOOKS") return "Google Books";
+  if (item.provider === "SPOTIFY") return "Spotify";
+  if (item.provider === "RAWG") return "RAWG";
+
+  return item.provider;
+}
+
+function getResultDescription(item: MediaResult) {
+  if (isExternalMedia(item)) return item.description;
+  return item.description ?? null;
+}
+
+function getResultPeople(item: MediaResult) {
+  if (!isExternalMedia(item)) {
+    if (item.albumDetails?.primaryArtistName) return item.albumDetails.primaryArtistName;
+    return null;
+  }
+
+  if (item.authors?.length) return item.authors.join(", ");
+  if (item.artists?.length) return item.artists.join(", ");
+  if (item.platforms?.length) return item.platforms.slice(0, 3).join(", ");
+
+  return null;
+}
+
+function getResultScore(item: MediaResult) {
+  if (!isExternalMedia(item)) return null;
+
+  return (
+    item.popularity ??
+    item.spotifyPopularity ??
+    item.voteCount ??
+    item.voteAverage ??
+    item.metacritic ??
+    item.rating ??
+    null
+  );
+}
+
+function ResultCover({ item }: { item: MediaResult }) {
+  const coverUrl = item.coverUrl ?? null;
+
+  if (item.type === "ALBUM") {
+    const artist =
+      isExternalMedia(item) && item.artists?.length
+        ? item.artists.join(", ")
+        : !isExternalMedia(item)
+          ? item.albumDetails?.primaryArtistName
+          : null;
+
+    return (
+      <div
+        style={{
+          width: 140,
+          height: 210,
+          border: "1px solid #ccc",
+          borderRadius: 10,
+          overflow: "hidden",
+          background: "white",
+          display: "flex",
+          flexDirection: "column",
+          flexShrink: 0,
+        }}
+      >
+        <div
+          style={{
+            height: 35,
+            padding: "5px 7px",
+            fontSize: 12,
+            fontWeight: 700,
+            textAlign: "center",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            lineHeight: 1.1,
+          }}
+        >
+          {artist || "Unknown Artist"}
+        </div>
+
+        <div
+          style={{
+            width: 140,
+            height: 140,
+            background: "#eee",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 12,
+            flexShrink: 0,
+          }}
+        >
+          {coverUrl ? (
+            <img
+              src={coverUrl}
+              alt={item.title}
+              loading="lazy"
+              decoding="async"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+              }}
+            />
+          ) : (
+            "No cover"
+          )}
+        </div>
+
+        <div
+          style={{
+            height: 35,
+            padding: "5px 7px",
+            fontSize: 12,
+            fontWeight: 800,
+            textAlign: "center",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            lineHeight: 1.1,
+          }}
+        >
+          {item.title}
+        </div>
+      </div>
+    );
+  }
+
+  if (coverUrl) {
+    return (
+      <img
+        src={coverUrl}
+        alt={item.title}
+        loading="lazy"
+        decoding="async"
+        style={{
+          width: 140,
+          height: 210,
+          objectFit: "cover",
+          borderRadius: 10,
+          border: "1px solid #ccc",
+          background: "#eee",
+          flexShrink: 0,
+        }}
+      />
+    );
+  }
+
+  return (
+    <div
+      style={{
+        width: 140,
+        height: 210,
+        border: "1px solid #ccc",
+        borderRadius: 10,
+        background: "#eee",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#666",
+        fontSize: 12,
+        flexShrink: 0,
+      }}
+    >
+      No cover
+    </div>
+  );
+}
+
+function ResultMeta({ item }: { item: MediaResult }) {
+  const year = formatYear(item.releaseDate);
+  const parts: string[] = [];
+
+  parts.push(item.type);
+  parts.push(getProviderLabel(item));
+
+  if (year) parts.push(year);
+
+  const people = getResultPeople(item);
+  if (people) parts.push(people);
+
+  if (isExternalMedia(item)) {
+    if (item.pageCount) parts.push(`${item.pageCount} pages`);
+    if (item.metacritic) parts.push(`Metacritic ${item.metacritic}`);
+    if (item.playtime) parts.push(`${item.playtime} hrs avg`);
+    if (item.voteAverage) parts.push(`TMDB ${item.voteAverage}`);
+    if (item.spotifyPopularity) parts.push(`Spotify popularity ${item.spotifyPopularity}`);
+  } else {
+    if (item.movieDetails?.runtimeMinutes) {
+      parts.push(`${item.movieDetails.runtimeMinutes} min`);
+    }
+
+    if (item.showDetails?.seasonsCount) {
+      parts.push(`${item.showDetails.seasonsCount} seasons`);
+    }
+
+    if (item.bookDetails?.pageCount) {
+      parts.push(`${item.bookDetails.pageCount} pages`);
+    }
+
+    if (item.albumDetails?.totalTracks) {
+      parts.push(`${item.albumDetails.totalTracks} tracks`);
+    }
+
+    if (item.gameDetails?.timeToBeatHours) {
+      parts.push(`${item.gameDetails.timeToBeatHours} hrs`);
+    }
+  }
+
+  return (
+    <p style={{ margin: "6px 0 0", color: "#555", lineHeight: 1.35 }}>
+      {parts.join(" · ")}
+    </p>
+  );
+}
+
+function selectedMatches(
+  item: MediaResult,
+  selectedMedia: LocalMediaResult | null,
+  selectedExternalKey: string | null
+) {
+  if (!selectedMedia) return false;
+
+  if (isExternalMedia(item)) {
+    return selectedExternalKey === getExternalKey(item);
+  }
+
+  return selectedMedia.id === item.id;
 }
 
 export default function AddEntryPage() {
@@ -231,24 +488,41 @@ export default function AddEntryPage() {
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MediaResult[]>([]);
-  const [selectedMedia, setSelectedMedia] = useState<LocalMediaResult | null>(
-    null
-  );
-  const [selectedExternalKey, setSelectedExternalKey] = useState<string | null>(
-    null
-  );
+  const [selectedMedia, setSelectedMedia] = useState<LocalMediaResult | null>(null);
+  const [selectedExternalKey, setSelectedExternalKey] = useState<string | null>(null);
+
   const [result, setResult] = useState("");
-  const [source, setSource] = useState<
-    "local" | "tmdb" | "books" | "musicbrainz" | "rawg"
-  >("local");
-  const [tmdbType, setTmdbType] = useState<"movie" | "tv">("movie");
+  const [source, setSource] = useState<Source>("tmdb");
+  const [mediaType, setMediaType] = useState<MediaTypeFilter>("MOVIE");
+  const [tmdbType, setTmdbType] = useState<TmdbType>("movie");
   const [searchBy, setSearchBy] = useState<SearchBy>("title");
+  const [sortBy, setSortBy] = useState<SortBy>("relevance");
+  const [yearFrom, setYearFrom] = useState("");
+  const [yearTo, setYearTo] = useState("");
+  const [minRating, setMinRating] = useState("");
   const [loading, setLoading] = useState(false);
 
   const searchOptions = useMemo(
     () => getSearchOptions(source, tmdbType),
     [source, tmdbType]
   );
+
+  useEffect(() => {
+    setCurrentUser(readCachedUser());
+    setAuthLoaded(true);
+
+    function handleAuthChanged() {
+      setCurrentUser(readCachedUser());
+    }
+
+    window.addEventListener("media-app-auth-changed", handleAuthChanged);
+    window.addEventListener("storage", handleAuthChanged);
+
+    return () => {
+      window.removeEventListener("media-app-auth-changed", handleAuthChanged);
+      window.removeEventListener("storage", handleAuthChanged);
+    };
+  }, []);
 
   useEffect(() => {
     const validOptions = getSearchOptions(source, tmdbType).map(
@@ -260,57 +534,156 @@ export default function AddEntryPage() {
     }
   }, [source, tmdbType, searchBy]);
 
-  useEffect(() => {
-    async function loadCurrentUser() {
-      try {
-        const res = await fetch("/api/auth/me", {
-          cache: "no-store",
-        });
-
-        const data = await safeJson(res);
-
-        if (res.ok && data?.user) {
-          setCurrentUser(data.user);
-        } else {
-          setCurrentUser(null);
-        }
-      } catch (error) {
-        setCurrentUser(null);
-        setResult(
-          JSON.stringify(
-            {
-              error: "Failed to load current user.",
-              details: String(error),
-            },
-            null,
-            2
-          )
-        );
-      } finally {
-        setAuthLoaded(true);
-      }
-    }
-
-    loadCurrentUser();
-  }, []);
-
-  function setSourceAndReset(
-    nextSource: "local" | "tmdb" | "books" | "musicbrainz" | "rawg"
-  ) {
-    setSource(nextSource);
-    setSearchBy("title");
+  function resetResults() {
     setResults([]);
     setSelectedMedia(null);
     setSelectedExternalKey(null);
     setResult("");
   }
 
-  async function searchMedia() {
-    if (!currentUser) {
-      setResult("Please log in before searching and adding entries.");
-      return;
+  function setSourceAndReset(nextSource: Source) {
+    setSource(nextSource);
+    setSearchBy("title");
+    resetResults();
+
+    if (nextSource === "tmdb") {
+      setMediaType(tmdbType === "tv" ? "SHOW" : "MOVIE");
     }
 
+    if (nextSource === "books") {
+      setMediaType("BOOK");
+    }
+
+    if (nextSource === "spotify") {
+      setMediaType("ALBUM");
+    }
+
+    if (nextSource === "rawg") {
+      setMediaType("GAME");
+    }
+
+    if (nextSource === "local") {
+      setMediaType("ALL");
+    }
+  }
+
+  function setMediaTypeAndSource(nextType: MediaTypeFilter) {
+    setMediaType(nextType);
+    resetResults();
+
+    if (nextType === "MOVIE") {
+      setSource("tmdb");
+      setTmdbType("movie");
+    }
+
+    if (nextType === "SHOW") {
+      setSource("tmdb");
+      setTmdbType("tv");
+    }
+
+    if (nextType === "BOOK") {
+      setSource("books");
+    }
+
+    if (nextType === "ALBUM") {
+      setSource("spotify");
+    }
+
+    if (nextType === "GAME") {
+      setSource("rawg");
+    }
+
+    if (nextType === "ALL") {
+      setSource("local");
+    }
+  }
+
+  function setTmdbTypeAndReset(nextType: TmdbType) {
+    setTmdbType(nextType);
+    setMediaType(nextType === "tv" ? "SHOW" : "MOVIE");
+    resetResults();
+  }
+
+  function addAdvancedParams(params: URLSearchParams) {
+    params.set("sort", sortBy);
+
+    if (yearFrom.trim()) {
+      params.set("yearFrom", yearFrom.trim());
+    }
+
+    if (yearTo.trim()) {
+      params.set("yearTo", yearTo.trim());
+    }
+
+    if (minRating.trim()) {
+      params.set("minRating", minRating.trim());
+    }
+
+    if (mediaType !== "ALL") {
+      params.set("mediaType", mediaType);
+    }
+  }
+
+  function applyClientFilters(items: MediaResult[]) {
+    const from = yearFrom.trim() ? Number(yearFrom.trim()) : null;
+    const to = yearTo.trim() ? Number(yearTo.trim()) : null;
+    const min = minRating.trim() ? Number(minRating.trim()) : null;
+
+    let filtered = items.filter((item) => {
+      const year = getNumericYear(item.releaseDate);
+
+      if (mediaType !== "ALL" && item.type !== mediaType) {
+        return false;
+      }
+
+      if (from && year && year < from) {
+        return false;
+      }
+
+      if (to && year && year > to) {
+        return false;
+      }
+
+      if (min && isExternalMedia(item)) {
+        const score =
+          item.voteAverage ??
+          item.rating ??
+          item.metacritic ??
+          item.spotifyPopularity ??
+          null;
+
+        if (score !== null && score < min) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    if (sortBy === "newest") {
+      filtered = filtered.sort(
+        (a, b) => (getNumericYear(b.releaseDate) ?? 0) - (getNumericYear(a.releaseDate) ?? 0)
+      );
+    }
+
+    if (sortBy === "oldest") {
+      filtered = filtered.sort(
+        (a, b) => (getNumericYear(a.releaseDate) ?? 9999) - (getNumericYear(b.releaseDate) ?? 9999)
+      );
+    }
+
+    if (sortBy === "popularity" || sortBy === "rating") {
+      filtered = filtered.sort((a, b) => {
+        const aScore = getResultScore(a) ?? 0;
+        const bScore = getResultScore(b) ?? 0;
+        return bScore - aScore;
+      });
+    }
+
+    return filtered;
+  }
+
+  async function searchMedia() {
     if (!query.trim()) {
       setResult("Please enter a search term.");
       return;
@@ -324,9 +697,11 @@ export default function AddEntryPage() {
 
     try {
       const params = new URLSearchParams({
-        q: query,
+        q: query.trim(),
         searchBy,
       });
+
+      addAdvancedParams(params);
 
       let endpoint = `/api/media/search?${params.toString()}`;
 
@@ -339,8 +714,8 @@ export default function AddEntryPage() {
         endpoint = `/api/media/external/books/search?${params.toString()}`;
       }
 
-      if (source === "musicbrainz") {
-        endpoint = `/api/media/external/musicbrainz/search?${params.toString()}`;
+      if (source === "spotify") {
+        endpoint = `/api/media/external/spotify/search?${params.toString()}`;
       }
 
       if (source === "rawg") {
@@ -365,12 +740,18 @@ export default function AddEntryPage() {
         return;
       }
 
-      const nextResults = getResultArray(data);
+      const nextResults = applyClientFilters(getResultArray(data));
+
       setResults(nextResults);
 
-      if (source === "musicbrainz" && nextResults.length > 0) {
+      if (nextResults.length === 0) {
+        setResult("No results found.");
+        return;
+      }
+
+      if (source === "spotify") {
         setResult(
-          "Tip: MusicBrainz can include obscure duplicate releases. Use Artist search for cleaner album results, e.g. search artist “Aphex Twin”."
+          "Spotify album results include album art, artist names, release dates, and popularity where available."
         );
       }
     } catch (error) {
@@ -391,11 +772,6 @@ export default function AddEntryPage() {
 
   async function selectMedia(item: MediaResult) {
     setResult("");
-
-    if (!currentUser) {
-      setResult("Please log in before selecting media.");
-      return;
-    }
 
     if (!isExternalMedia(item)) {
       setSelectedMedia(item);
@@ -438,7 +814,10 @@ export default function AddEntryPage() {
         return;
       }
 
-      if (!data.media) {
+      const importedMedia =
+        data.media || data.mediaItem || data.item || data.result || null;
+
+      if (!importedMedia) {
         setResult(
           JSON.stringify(
             {
@@ -452,11 +831,11 @@ export default function AddEntryPage() {
         return;
       }
 
-      setSelectedMedia(data.media);
+      setSelectedMedia(importedMedia);
       setResult(
         data.imported
-          ? `Imported "${data.media.title}" into local database.`
-          : `"${data.media.title}" already existed in local database.`
+          ? `Imported "${importedMedia.title}" into local database.`
+          : `"${importedMedia.title}" already existed in local database.`
       );
     } catch (error) {
       setResult(
@@ -488,6 +867,9 @@ export default function AddEntryPage() {
     }
 
     const form = new FormData(event.currentTarget);
+    const ratingRaw = form.get("ratingValue");
+    const ratingValue =
+      ratingRaw === null || ratingRaw === "" ? null : Number(ratingRaw);
 
     setLoading(true);
 
@@ -498,10 +880,9 @@ export default function AddEntryPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: currentUser.id,
           mediaId: selectedMedia.id,
           status: form.get("status"),
-          ratingValue: Number(form.get("ratingValue")),
+          ratingValue,
           reviewText: form.get("reviewText"),
         }),
       });
@@ -509,6 +890,11 @@ export default function AddEntryPage() {
       const data = await safeJson(res);
 
       if (!res.ok || !data) {
+        if (res.status === 401) {
+          setCurrentUser(null);
+          clearCachedUser();
+        }
+
         setResult(
           JSON.stringify(
             {
@@ -543,12 +929,16 @@ export default function AddEntryPage() {
   }
 
   return (
-    <main style={{ padding: 40, maxWidth: 900 }}>
-      <h1>Add / Update Entry</h1>
+    <main style={{ padding: 40, maxWidth: 1100 }}>
+      <h1>Add Entry / Advanced Search</h1>
 
-      {!authLoaded ? (
-        <p style={{ color: "#555" }}>Checking login...</p>
-      ) : currentUser ? (
+      <p style={{ color: "#555", maxWidth: 760 }}>
+        Search across movies, TV, books, albums, and games. You can browse and
+        import media without logging in. Log in only when you want to save a
+        rating, review, or entry.
+      </p>
+
+      {authLoaded && currentUser ? (
         <p style={{ color: "#555" }}>
           Saving entries as{" "}
           <strong>
@@ -556,157 +946,85 @@ export default function AddEntryPage() {
             {currentUser.username})
           </strong>
         </p>
-      ) : (
+      ) : null}
+
+      <section
+        style={{
+          marginBottom: 30,
+          border: "1px solid #ddd",
+          borderRadius: 14,
+          padding: 18,
+          background: "white",
+        }}
+      >
+        <h2 style={{ marginTop: 0 }}>Detailed Search</h2>
+
         <div
           style={{
-            border: "1px solid #f0b4b4",
-            background: "#fff5f5",
-            padding: 14,
-            borderRadius: 10,
-            marginBottom: 20,
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+            gap: 12,
+            marginBottom: 16,
           }}
         >
-          <p style={{ color: "#900", marginTop: 0 }}>
-            You are not logged in. Log in or create an account before saving
-            entries.
-          </p>
-
-          <a
-            href="/login"
-            style={{
-              display: "inline-block",
-              padding: "8px 12px",
-              border: "1px solid #222",
-              borderRadius: 8,
-              textDecoration: "none",
-              color: "black",
-              fontWeight: 700,
-              marginRight: 10,
-              background: "white",
-            }}
-          >
-            Log In
-          </a>
-
-          <a
-            href="/signup"
-            style={{
-              display: "inline-block",
-              padding: "8px 12px",
-              border: "1px solid #ccc",
-              borderRadius: 8,
-              textDecoration: "none",
-              color: "black",
-              fontWeight: 700,
-              background: "white",
-            }}
-          >
-            Sign Up
-          </a>
-        </div>
-      )}
-
-      <section style={{ marginBottom: 30 }}>
-        <h2>Search Media</h2>
-
-        <div style={{ marginBottom: 12 }}>
           <label>
-            <input
-              type="radio"
-              name="source"
-              checked={source === "local"}
-              onChange={() => setSourceAndReset("local")}
-            />{" "}
-            Local DB
+            Media type
+            <select
+              value={mediaType}
+              onChange={(event) =>
+                setMediaTypeAndSource(event.target.value as MediaTypeFilter)
+              }
+              style={{ display: "block", width: "100%", padding: 8, marginTop: 6 }}
+            >
+              <option value="ALL">All local media</option>
+              <option value="MOVIE">Movies</option>
+              <option value="SHOW">TV Shows</option>
+              <option value="BOOK">Books</option>
+              <option value="ALBUM">Albums</option>
+              <option value="GAME">Games</option>
+            </select>
           </label>
 
-          <label style={{ marginLeft: 16 }}>
-            <input
-              type="radio"
-              name="source"
-              checked={source === "tmdb"}
-              onChange={() => setSourceAndReset("tmdb")}
-            />{" "}
-            TMDB
+          <label>
+            Source
+            <select
+              value={source}
+              onChange={(event) => setSourceAndReset(event.target.value as Source)}
+              style={{ display: "block", width: "100%", padding: 8, marginTop: 6 }}
+            >
+              <option value="local">Local DB</option>
+              <option value="tmdb">TMDB</option>
+              <option value="books">Google Books</option>
+              <option value="spotify">Spotify Albums</option>
+              <option value="rawg">RAWG Games</option>
+            </select>
           </label>
 
-          <label style={{ marginLeft: 16 }}>
-            <input
-              type="radio"
-              name="source"
-              checked={source === "books"}
-              onChange={() => setSourceAndReset("books")}
-            />{" "}
-            Google Books
-          </label>
-
-          <label style={{ marginLeft: 16 }}>
-            <input
-              type="radio"
-              name="source"
-              checked={source === "musicbrainz"}
-              onChange={() => setSourceAndReset("musicbrainz")}
-            />{" "}
-            MusicBrainz Albums
-          </label>
-
-          <label style={{ marginLeft: 16 }}>
-            <input
-              type="radio"
-              name="source"
-              checked={source === "rawg"}
-              onChange={() => setSourceAndReset("rawg")}
-            />{" "}
-            RAWG Games
-          </label>
-        </div>
-
-        {source === "tmdb" && (
-          <div style={{ marginBottom: 12 }}>
+          {source === "tmdb" ? (
             <label>
-              <input
-                type="radio"
-                name="tmdbType"
-                checked={tmdbType === "movie"}
-                onChange={() => {
-                  setTmdbType("movie");
-                  setResults([]);
-                  setSelectedMedia(null);
-                  setSelectedExternalKey(null);
-                }}
-              />{" "}
-              Movies
+              TMDB type
+              <select
+                value={tmdbType}
+                onChange={(event) =>
+                  setTmdbTypeAndReset(event.target.value as TmdbType)
+                }
+                style={{ display: "block", width: "100%", padding: 8, marginTop: 6 }}
+              >
+                <option value="movie">Movies</option>
+                <option value="tv">TV Shows</option>
+              </select>
             </label>
+          ) : null}
 
-            <label style={{ marginLeft: 16 }}>
-              <input
-                type="radio"
-                name="tmdbType"
-                checked={tmdbType === "tv"}
-                onChange={() => {
-                  setTmdbType("tv");
-                  setResults([]);
-                  setSelectedMedia(null);
-                  setSelectedExternalKey(null);
-                }}
-              />{" "}
-              TV Shows
-            </label>
-          </div>
-        )}
-
-        <div style={{ marginBottom: 12 }}>
           <label>
-            Search by{" "}
+            Search by
             <select
               value={searchBy}
               onChange={(event) => {
                 setSearchBy(event.target.value as SearchBy);
-                setResults([]);
-                setSelectedMedia(null);
-                setSelectedExternalKey(null);
+                resetResults();
               }}
-              style={{ padding: 8, marginLeft: 6 }}
+              style={{ display: "block", width: "100%", padding: 8, marginTop: 6 }}
             >
               {searchOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -715,227 +1033,276 @@ export default function AddEntryPage() {
               ))}
             </select>
           </label>
+
+          <label>
+            Sort
+            <select
+              value={sortBy}
+              onChange={(event) => {
+                setSortBy(event.target.value as SortBy);
+                setResults((items) => applyClientFilters([...items]));
+              }}
+              style={{ display: "block", width: "100%", padding: 8, marginTop: 6 }}
+            >
+              <option value="relevance">Relevance</option>
+              <option value="popularity">Popularity</option>
+              <option value="rating">Rating</option>
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+            </select>
+          </label>
+
+          <label>
+            Year from
+            <input
+              value={yearFrom}
+              onChange={(event) => setYearFrom(event.target.value)}
+              placeholder="e.g. 1990"
+              inputMode="numeric"
+              style={{ display: "block", width: "100%", padding: 8, marginTop: 6 }}
+            />
+          </label>
+
+          <label>
+            Year to
+            <input
+              value={yearTo}
+              onChange={(event) => setYearTo(event.target.value)}
+              placeholder="e.g. 2026"
+              inputMode="numeric"
+              style={{ display: "block", width: "100%", padding: 8, marginTop: 6 }}
+            />
+          </label>
+
+          <label>
+            Min score
+            <input
+              value={minRating}
+              onChange={(event) => setMinRating(event.target.value)}
+              placeholder="rating/popularity"
+              inputMode="numeric"
+              style={{ display: "block", width: "100%", padding: 8, marginTop: 6 }}
+            />
+          </label>
         </div>
 
-        <input
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder={getPlaceholder({ source, tmdbType, searchBy })}
-          style={{ padding: 8, width: 430, maxWidth: "100%" }}
-        />
-
-        <button
-          type="button"
-          onClick={searchMedia}
-          disabled={loading || !currentUser}
-          style={{ marginLeft: 10, padding: 8 }}
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            searchMedia();
+          }}
+          style={{ display: "flex", gap: 10, alignItems: "center" }}
         >
-          {loading ? "Loading..." : "Search"}
-        </button>
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={getPlaceholder({ source, tmdbType, searchBy })}
+            style={{
+              padding: 10,
+              width: 520,
+              maxWidth: "100%",
+              border: "1px solid #ccc",
+              borderRadius: 999,
+            }}
+          />
 
-        {source === "musicbrainz" && (
-          <p style={{ color: "#777", fontSize: 14, maxWidth: 720 }}>
-              MusicBrainz can include obscure duplicate releases, so results are ranked
-              by title match, album type, release count, and release date. Artist search
-              is still the cleanest option for messy album titles.
-          </p>
-        )}
-
-        <div style={{ marginTop: 16 }}>
-          {results.map((item) => {
-            const year = formatYear(item.releaseDate);
-            const selected = isSelectedResult(
-              item,
-              selectedMedia,
-              selectedExternalKey
-            );
-
-            return (
-              <button
-                key={getResultKey(item)}
-                type="button"
-                onClick={() => selectMedia(item)}
-                disabled={loading || !currentUser}
-                style={{
-                  display: "block",
-                  width: "100%",
-                  textAlign: "left",
-                  padding: 12,
-                  marginBottom: 8,
-                  border: selected ? "2px solid black" : "1px solid #ccc",
-                  borderRadius: 8,
-                  background: selected ? "#f1f1f1" : "white",
-                  cursor: loading ? "not-allowed" : "pointer",
-                }}
-              >
-                <strong>{item.title}</strong> ({item.type})
-                {year && <span> — {year}</span>}
-
-                {!isExternalMedia(item) &&
-                  item.movieDetails?.runtimeMinutes && (
-                    <span> — {item.movieDetails.runtimeMinutes} min</span>
-                  )}
-
-                {!isExternalMedia(item) &&
-                  item.showDetails?.seasonsCount && (
-                    <span> — {item.showDetails.seasonsCount} seasons</span>
-                  )}
-
-                {!isExternalMedia(item) && item.bookDetails?.pageCount && (
-                  <span> — {item.bookDetails.pageCount} pages</span>
-                )}
-
-                {!isExternalMedia(item) &&
-                  item.albumDetails?.primaryArtistName && (
-                    <span> — {item.albumDetails.primaryArtistName}</span>
-                  )}
-
-                {!isExternalMedia(item) && item.albumDetails?.totalTracks && (
-                  <span> — {item.albumDetails.totalTracks} tracks</span>
-                )}
-
-                {!isExternalMedia(item) &&
-                  item.gameDetails?.timeToBeatHours && (
-                    <span> — {item.gameDetails.timeToBeatHours} hrs</span>
-                  )}
-
-                {!isExternalMedia(item) &&
-                  item.type === "GAME" &&
-                  item.gameDetails?.multiplayer !== undefined && (
-                    <span>
-                      {" "}
-                      —{" "}
-                      {item.gameDetails.multiplayer
-                        ? "Multiplayer"
-                        : "Single-player"}
-                    </span>
-                  )}
-
-                {isExternalMedia(item) && item.provider === "TMDB" && (
-                  <span> — TMDB result</span>
-                )}
-
-                {isExternalMedia(item) &&
-                  item.provider === "GOOGLE_BOOKS" && (
-                    <span>
-                      {" "}
-                      — Google Books result
-                      {item.authors?.length
-                        ? ` — ${item.authors.join(", ")}`
-                        : ""}
-                      {item.pageCount ? ` — ${item.pageCount} pages` : ""}
-                    </span>
-                  )}
-
-                {isExternalMedia(item) &&
-                  item.provider === "MUSICBRAINZ" && (
-                    <span>
-                      {" "}
-                      — MusicBrainz album
-                      {item.artists?.length
-                        ? ` — ${item.artists.join(", ")}`
-                        : ""}
-                    </span>
-                  )}
-
-                {isExternalMedia(item) && item.provider === "RAWG" && (
-                  <span>
-                    {" "}
-                    — RAWG game
-                    {item.platforms?.length
-                      ? ` — ${item.platforms.slice(0, 3).join(", ")}`
-                      : ""}
-                    {item.genres?.length
-                      ? ` — ${item.genres.slice(0, 3).join(", ")}`
-                      : ""}
-                    {item.metacritic ? ` — Metacritic ${item.metacritic}` : ""}
-                    {item.playtime ? ` — ${item.playtime} hrs avg` : ""}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              padding: "10px 14px",
+              borderRadius: 999,
+              border: "1px solid #222",
+              background: "black",
+              color: "white",
+              fontWeight: 800,
+              cursor: loading ? "not-allowed" : "pointer",
+            }}
+          >
+            {loading ? "Loading..." : "Search"}
+          </button>
+        </form>
       </section>
 
-      {selectedMedia && (
-        <div
+      {results.length > 0 ? (
+        <section style={{ marginBottom: 30 }}>
+          <h2>Results</h2>
+
+          <div style={{ display: "grid", gap: 14 }}>
+            {results.map((item) => {
+              const selected = selectedMatches(
+                item,
+                selectedMedia,
+                selectedExternalKey
+              );
+              const description = getResultDescription(item);
+
+              return (
+                <button
+                  key={getResultKey(item)}
+                  type="button"
+                  onClick={() => selectMedia(item)}
+                  disabled={loading}
+                  style={{
+                    width: "100%",
+                    textAlign: "left",
+                    border: selected ? "2px solid black" : "1px solid #ddd",
+                    borderRadius: 14,
+                    padding: 14,
+                    background: selected ? "#f1f1f1" : "white",
+                    display: "flex",
+                    gap: 16,
+                    cursor: loading ? "not-allowed" : "pointer",
+                  }}
+                >
+                  <ResultCover item={item} />
+
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <strong style={{ fontSize: 18 }}>{item.title}</strong>
+
+                    <ResultMeta item={item} />
+
+                    {description ? (
+                      <p
+                        style={{
+                          margin: "10px 0 0",
+                          color: "#333",
+                          lineHeight: 1.4,
+                          maxHeight: 82,
+                          overflow: "hidden",
+                        }}
+                      >
+                        {description}
+                      </p>
+                    ) : null}
+
+                    {isExternalMedia(item) ? (
+                      <p style={{ margin: "10px 0 0", color: "#777", fontSize: 13 }}>
+                        Click to import/open from {getProviderLabel(item)}.
+                      </p>
+                    ) : (
+                      <p style={{ margin: "10px 0 0", color: "#777", fontSize: 13 }}>
+                        Local media item.
+                      </p>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
+
+      {selectedMedia ? (
+        <section
           style={{
-            marginBottom: 20,
+            marginBottom: 24,
             border: "1px solid #ddd",
-            borderRadius: 10,
+            borderRadius: 14,
             background: "#f7f7f7",
-            padding: 12,
+            padding: 14,
           }}
         >
           <p style={{ marginTop: 0 }}>
-            Selected local media: <strong>{selectedMedia.title}</strong> — ID{" "}
-            {selectedMedia.id}
+            Selected media: <strong>{selectedMedia.title}</strong>
           </p>
 
-          <a href={`/media/${selectedMedia.id}`}>View Media Page</a>
-        </div>
-      )}
+          <Link href={`/media/${selectedMedia.id}`}>View Media Page</Link>
+        </section>
+      ) : null}
 
-      <form onSubmit={handleSubmit}>
-        <label>Status</label>
-        <br />
-        <select name="status" defaultValue="COMPLETED">
-          <option value="WISHLIST">Wishlist</option>
-          <option value="IN_PROGRESS">In Progress</option>
-          <option value="COMPLETED">Completed</option>
-          <option value="PAUSED">Paused</option>
-          <option value="DROPPED">Dropped</option>
-        </select>
+      <section
+        style={{
+          border: "1px solid #ddd",
+          borderRadius: 14,
+          padding: 18,
+          background: "white",
+        }}
+      >
+        <h2 style={{ marginTop: 0 }}>Log / Review</h2>
 
-        <br />
-        <br />
+        {!currentUser ? (
+          <p style={{ color: "#777" }}>
+            You can search and import without logging in.{" "}
+            <Link href="/login">Log in</Link> to save an entry.
+          </p>
+        ) : null}
 
-        <label>Rating 1-10</label>
-        <br />
-        <input
-          name="ratingValue"
-          type="number"
-          min="1"
-          max="10"
-          defaultValue="9"
-        />
+        <form onSubmit={handleSubmit}>
+          <label>Status</label>
+          <br />
+          <select name="status" defaultValue="COMPLETED">
+            <option value="WISHLIST">Wishlist</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="PAUSED">Paused</option>
+            <option value="DROPPED">Dropped</option>
+          </select>
 
-        <br />
-        <br />
+          <br />
+          <br />
 
-        <label>Review</label>
-        <br />
-        <textarea
-          name="reviewText"
-          defaultValue="Updated from search/import UI."
-          style={{ width: 400, height: 100, maxWidth: "100%" }}
-        />
+          <label>Rating 1-10</label>
+          <br />
+          <input name="ratingValue" type="number" min="1" max="10" />
 
-        <br />
-        <br />
+          <br />
+          <br />
 
-        <button
-          type="submit"
-          disabled={!selectedMedia || loading || !currentUser}
+          <label>Review</label>
+          <br />
+          <textarea
+            name="reviewText"
+            placeholder="Write your thoughts..."
+            style={{ width: 500, height: 100, maxWidth: "100%" }}
+          />
+
+          <br />
+          <br />
+
+          <button
+            type="submit"
+            disabled={!selectedMedia || loading || !currentUser}
+            style={{
+              padding: "9px 12px",
+              borderRadius: 8,
+              border: "1px solid #222",
+              background: !selectedMedia || !currentUser ? "#ccc" : "black",
+              color: !selectedMedia || !currentUser ? "#555" : "white",
+              fontWeight: 800,
+              cursor: !selectedMedia || !currentUser ? "not-allowed" : "pointer",
+            }}
+          >
+            Save Entry
+          </button>
+        </form>
+      </section>
+
+      {result ? (
+        <pre
+          style={{
+            marginTop: 20,
+            whiteSpace: "pre-wrap",
+            background: "#f6f6f6",
+            padding: 12,
+            borderRadius: 8,
+          }}
         >
-          Save Entry
-        </button>
-      </form>
+          {result}
+        </pre>
+      ) : null}
 
-      <pre style={{ marginTop: 20, whiteSpace: "pre-wrap" }}>{result}</pre>
-
-      {selectedMedia && (
+      {selectedMedia ? (
         <div style={{ marginTop: 20 }}>
-          <a href={`/media/${selectedMedia.id}`}>Go to Media Page</a>
+          <Link href={`/media/${selectedMedia.id}`}>Go to Media Page</Link>
           {" | "}
           {currentUser ? (
-            <a href={`/profiles/${currentUser.username}`}>Go to My Profile</a>
+            <Link href={`/profiles/${currentUser.username}`}>Go to My Profile</Link>
           ) : (
-            <a href="/login">Log In</a>
+            <Link href="/login">Log In</Link>
           )}
         </div>
-      )}
+      ) : null}
     </main>
   );
 }
