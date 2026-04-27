@@ -407,7 +407,7 @@ function MediaMeta({ media }: { media: Media }) {
 
 function PopularMovieScroller({ events }: { events: FeedEvent[] }) {
   if (events.length === 0) {
-    return <p>No TMDB popular movies loaded this week.</p>;
+    return null;
   }
 
   return (
@@ -493,7 +493,7 @@ function PopularMovieScroller({ events }: { events: FeedEvent[] }) {
 
 function PopularTvScroller({ events }: { events: FeedEvent[] }) {
   if (events.length === 0) {
-    return <p>No TMDB popular TV loaded this week.</p>;
+    return null;
   }
 
   return (
@@ -579,7 +579,7 @@ function PopularTvScroller({ events }: { events: FeedEvent[] }) {
 
 function PopularAlbumScroller({ events }: { events: FeedEvent[] }) {
   if (events.length === 0) {
-    return <p>No popular new albums loaded.</p>;
+    return null;
   }
 
   return (
@@ -679,7 +679,7 @@ function PopularAlbumScroller({ events }: { events: FeedEvent[] }) {
 
 function PopularBookScroller({ events }: { events: FeedEvent[] }) {
   if (events.length === 0) {
-    return <p>No popular books loaded.</p>;
+    return null;
   }
 
   return (
@@ -779,7 +779,7 @@ function PopularBookScroller({ events }: { events: FeedEvent[] }) {
 
 function PopularGameScroller({ events }: { events: FeedEvent[] }) {
   if (events.length === 0) {
-    return <p>No popular games loaded.</p>;
+    return null;
   }
 
   return (
