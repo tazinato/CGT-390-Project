@@ -1029,7 +1029,13 @@ export default function FeedPage() {
   async function initializeFeed() {
     setLoading(true);
 
-    const user = await loadCurrentUser();
+    // Start auth check and feed loading at the same time.
+    // The feed route authenticates itself now, so we do not need to wait
+    // for /api/auth/me before requesting feed data.
+    const userPromise = loadCurrentUser();
+    const feedPromise = loadFeedForUser("all");
+
+    const user = await userPromise;
 
     if (!user) {
       setScope("popular");
@@ -1037,7 +1043,7 @@ export default function FeedPage() {
       return;
     }
 
-    await loadFeedForUser("all");
+    await feedPromise;
   }
 
   function changeScope(nextScope: FeedScope) {
