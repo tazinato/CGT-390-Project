@@ -126,7 +126,7 @@ function formatDuration(seconds: number | null | undefined) {
 
 function getEmptyMessage(scope: FeedScope) {
   if (scope === "popular") {
-    return "No popular movies or albums loaded yet.";
+    return "No popular movies, albums, or books loaded yet.";
   }
 
   if (scope === "friends") {
@@ -151,6 +151,16 @@ function getMediaHref(media: Media, scope: FeedScope) {
     return `/media/import?provider=SPOTIFY&externalId=${encodeURIComponent(
       media.externalId
     )}&type=ALBUM`;
+  }
+
+  if (
+    scope === "popular" &&
+    media.provider === "GOOGLE_BOOKS" &&
+    media.externalId
+  ) {
+    return `/media/import?provider=GOOGLE_BOOKS&externalId=${encodeURIComponent(
+      media.externalId
+    )}&type=BOOK`;
   }
 
   return `/media/${media.id}`;
@@ -509,6 +519,106 @@ function PopularAlbumScroller({ events }: { events: FeedEvent[] }) {
   );
 }
 
+function PopularBookScroller({ events }: { events: FeedEvent[] }) {
+  if (events.length === 0) {
+    return <p>No popular books loaded.</p>;
+  }
+
+  return (
+    <section style={{ marginTop: 34 }}>
+      <h2 style={{ marginTop: 0 }}>Popular Books</h2>
+
+      <div
+        style={{
+          display: "flex",
+          gap: 16,
+          overflowX: "auto",
+          paddingBottom: 18,
+          scrollSnapType: "x mandatory",
+        }}
+      >
+        {events.map((event) => {
+          const media = event.entry.media;
+          const mediaHref = getMediaHref(media, "popular");
+
+          return (
+            <a
+              key={`${event.id}-${media.externalId || media.id}`}
+              href={mediaHref}
+              style={{
+                width: 160,
+                flex: "0 0 auto",
+                color: "inherit",
+                textDecoration: "none",
+                scrollSnapAlign: "start",
+              }}
+            >
+              {media.coverUrl ? (
+                <img
+                  src={media.coverUrl}
+                  alt={media.title}
+                  loading="lazy"
+                  decoding="async"
+                  style={{
+                    width: 160,
+                    height: 240,
+                    objectFit: "cover",
+                    borderRadius: 8,
+                    border: "1px solid #ccc",
+                    background: "#eee",
+                    display: "block",
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: 160,
+                    height: 240,
+                    border: "1px solid #ccc",
+                    borderRadius: 8,
+                    background: "#eee",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 12,
+                  }}
+                >
+                  No cover
+                </div>
+              )}
+
+              <strong
+                style={{
+                  display: "block",
+                  marginTop: 8,
+                  fontSize: 15,
+                  lineHeight: 1.2,
+                }}
+              >
+                {media.title}
+              </strong>
+
+              {media.bookDetails?.pageCount ? (
+                <span
+                  style={{
+                    display: "block",
+                    marginTop: 3,
+                    fontSize: 13,
+                    color: "#666",
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {media.bookDetails.pageCount} pages
+                </span>
+              ) : null}
+            </a>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function ScopeButton({
   label,
   value,
@@ -549,6 +659,7 @@ export default function FeedPage() {
 
   const [events, setEvents] = useState<FeedEvent[]>([]);
   const [popularAlbumEvents, setPopularAlbumEvents] = useState<FeedEvent[]>([]);
+  const [popularBookEvents, setPopularBookEvents] = useState<FeedEvent[]>([]);
   const [scope, setScope] = useState<FeedScope>("all");
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState("");
@@ -591,18 +702,23 @@ export default function FeedPage() {
         // shows All/Friends/Mine activity while external rows are loading.
         setEvents([]);
         setPopularAlbumEvents([]);
+        setPopularBookEvents([]);
 
-        const [movieRes, albumRes] = await Promise.all([
+        const [movieRes, albumRes, bookRes] = await Promise.all([
           fetch("/api/feed/popular-this-week", {
             cache: "no-store",
           }),
           fetch("/api/feed/popular-new-albums", {
             cache: "no-store",
           }),
+          fetch("/api/feed/popular-books", {
+            cache: "no-store",
+          }),
         ]);
 
         const movieData = await safeJson(movieRes);
         const albumData = await safeJson(albumRes);
+        const bookData = await safeJson(bookRes);
 
         if (!movieRes.ok || !Array.isArray(movieData)) {
           setResult(
@@ -627,10 +743,17 @@ export default function FeedPage() {
           setPopularAlbumEvents(albumData);
         }
 
+        if (!bookRes.ok || !Array.isArray(bookData)) {
+          setPopularBookEvents([]);
+        } else {
+          setPopularBookEvents(bookData);
+        }
+
         return;
       }
 
       setPopularAlbumEvents([]);
+      setPopularBookEvents([]);
 
       const res = await fetch(`/api/feed?${params.toString()}`, {
         cache: "no-store",
@@ -692,6 +815,7 @@ export default function FeedPage() {
     if (!user) {
       setEvents([]);
       setPopularAlbumEvents([]);
+      setPopularBookEvents([]);
       setLoading(false);
       return;
     }
@@ -876,6 +1000,7 @@ export default function FeedPage() {
         <>
           <PopularMovieScroller events={events} />
           <PopularAlbumScroller events={popularAlbumEvents} />
+          <PopularBookScroller events={popularBookEvents} />
         </>
       ) : (
         <div style={{ display: "grid", gap: 16 }}>
