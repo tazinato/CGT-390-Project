@@ -66,6 +66,33 @@ type FeedEvent = {
   };
 };
 
+const AUTH_CACHE_KEY = "media_app_current_user_cache";
+
+function readCachedUser() {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const cached = window.sessionStorage.getItem(AUTH_CACHE_KEY);
+
+    if (!cached) return null;
+
+    return JSON.parse(cached) as CurrentUser | null;
+  } catch {
+    return null;
+  }
+}
+
+function clearCachedUser() {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.sessionStorage.removeItem(AUTH_CACHE_KEY);
+    window.dispatchEvent(new Event("media-app-auth-changed"));
+  } catch {
+    // Ignore storage failures.
+  }
+}
+
 async function safeJson(res: Response) {
   const text = await res.text();
 
@@ -1034,37 +1061,32 @@ export default function FeedPage() {
 
   async function initializeFeed() {
     setLoading(true);
+    setResult("");
 
-    // Start auth check and feed loading at the same time.
-    // The feed route authenticates itself now, so we do not need to wait
-    // for /api/auth/me before requesting feed data.
-    const userPromise = loadCurrentUser();
-    const feedPromise = loadFeedForUser("all");
+    const cachedUser = readCachedUser();
 
-    const user = await userPromise;
-
-    if (!user) {
+    if (!cachedUser) {
+      setCurrentUser(null);
+      setAuthLoaded(true);
       setScope("popular");
       await loadFeedForUser("popular");
       return;
     }
 
-    await feedPromise;
+    setCurrentUser(cachedUser);
+    setAuthLoaded(true);
+    setScope("all");
+    await loadFeedForUser("all");
   }
 
   function changeScope(nextScope: FeedScope) {
+    if (nextScope !== "popular" && !currentUser) {
+      setScope("popular");
+      setResult("");
+      return;
+    }
+
     setScope(nextScope);
-
-    if (nextScope === "popular") {
-      loadFeedForUser(nextScope);
-      return;
-    }
-
-    if (!currentUser) {
-      setResult("Please log in to use your feed.");
-      return;
-    }
-
     loadFeedForUser(nextScope);
   }
 
@@ -1090,9 +1112,7 @@ export default function FeedPage() {
     <main style={{ padding: 40, maxWidth: 900 }}>
       <h1>Feed</h1>
 
-      {!authLoaded ? (
-        <p style={{ color: "#555" }}>Checking login...</p>
-      ) : currentUser ? (
+      {!authLoaded ? null : currentUser ? (
         <p style={{ color: "#555" }}>
           Recent activity for{" "}
           <strong>
@@ -1101,55 +1121,7 @@ export default function FeedPage() {
           </strong>
           .
         </p>
-      ) : (
-        <div
-          style={{
-            border: "1px solid #f0b4b4",
-            background: "#fff5f5",
-            padding: 14,
-            borderRadius: 10,
-            marginBottom: 20,
-          }}
-        >
-          <p style={{ color: "#900", marginTop: 0 }}>
-            You are not logged in. You can still browse popular movies, shows,
-            albums, books, and games. Log in to view All, Friends, or Mine.
-          </p>
-
-          <a
-            href="/login"
-            style={{
-              display: "inline-block",
-              padding: "8px 12px",
-              border: "1px solid #222",
-              borderRadius: 8,
-              textDecoration: "none",
-              color: "black",
-              fontWeight: 700,
-              marginRight: 10,
-              background: "white",
-            }}
-          >
-            Log In
-          </a>
-
-          <a
-            href="/signup"
-            style={{
-              display: "inline-block",
-              padding: "8px 12px",
-              border: "1px solid #ccc",
-              borderRadius: 8,
-              textDecoration: "none",
-              color: "black",
-              fontWeight: 700,
-              background: "white",
-            }}
-          >
-            Sign Up
-          </a>
-        </div>
-      )}
+      ) : null}
 
       <div
         style={{
@@ -1160,7 +1132,9 @@ export default function FeedPage() {
           flexWrap: "wrap",
         }}
       >
-        <ScopeButton
+        {currentUser ? (
+          <>
+            <ScopeButton
           label="All"
           value="all"
           activeScope={scope}
@@ -1168,7 +1142,7 @@ export default function FeedPage() {
           disabled={loading || (scope !== "popular" && !currentUser)}
         />
 
-        <ScopeButton
+            <ScopeButton
           label="Friends"
           value="friends"
           activeScope={scope}
@@ -1176,13 +1150,16 @@ export default function FeedPage() {
           disabled={loading || !currentUser}
         />
 
-        <ScopeButton
+            <ScopeButton
           label="Mine"
           value="me"
           activeScope={scope}
           onClick={changeScope}
           disabled={loading || !currentUser}
         />
+
+          </>
+        ) : null}
 
         <ScopeButton
           label="Popular This Week"
