@@ -218,6 +218,138 @@ function getRawgMultiplayer(details: RawgGameDetails) {
   );
 }
 
+type SpotifyAlbumDetails = {
+  id: string;
+  name?: string;
+  album_type?: string;
+  release_date?: string;
+  total_tracks?: number;
+  images?: Array<{
+    url: string;
+    height?: number | null;
+    width?: number | null;
+  }>;
+  artists?: Array<{
+    id?: string;
+    name?: string;
+    external_urls?: {
+      spotify?: string;
+    };
+  }>;
+  external_urls?: {
+    spotify?: string;
+  };
+  tracks?: {
+    items?: Array<{
+      duration_ms?: number;
+    }>;
+  };
+};
+
+async function getSpotifyAccessToken() {
+  const clientId = process.env.SPOTIFY_CLIENT_ID;
+  const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+
+  if (!clientId || !clientSecret) {
+    throw new Error("SPOTIFY_CLIENT_ID or SPOTIFY_CLIENT_SECRET is missing.");
+  }
+
+  const response = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString(
+        "base64"
+      )}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: "grant_type=client_credentials",
+    next: {
+      revalidate: 3300,
+    },
+  });
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    throw new Error(`Spotify token request failed: ${response.status} ${body}`);
+  }
+
+  const data = await response.json();
+
+  if (!data?.access_token) {
+    throw new Error("Spotify token response did not include an access token.");
+  }
+
+  return String(data.access_token);
+}
+
+async function getSpotifyAlbumDetails(externalId: string) {
+  const token = await getSpotifyAccessToken();
+
+  const response = await fetch(
+    `https://api.spotify.com/v1/albums/${encodeURIComponent(externalId)}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+      next: {
+        revalidate: 86400,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    throw new Error(`Spotify album fetch failed: ${response.status} ${body}`);
+  }
+
+  return response.json() as Promise<SpotifyAlbumDetails>;
+}
+
+function getSpotifyImage(images: SpotifyAlbumDetails["images"] | null | undefined) {
+  if (!images || images.length === 0) return null;
+
+  return [...images].sort((a, b) => {
+    const aSize = a.width ?? a.height ?? 0;
+    const bSize = b.width ?? b.height ?? 0;
+
+    return bSize - aSize;
+  })[0]?.url ?? null;
+}
+
+function getSpotifyAlbumDurationSeconds(details: SpotifyAlbumDetails) {
+  const totalMs =
+    details.tracks?.items?.reduce(
+      (sum, track) => sum + (track.duration_ms ?? 0),
+      0
+    ) ?? 0;
+
+  if (totalMs <= 0) return null;
+
+  return Math.round(totalMs / 1000);
+}
+
+function getSpotifyAlbumDescription(details: SpotifyAlbumDetails) {
+  const artistNames =
+    details.artists?.map((artist) => artist.name).filter(Boolean) ?? [];
+
+  const parts: string[] = [];
+
+  if (artistNames.length > 0) {
+    parts.push(`Album by ${artistNames.join(", ")}`);
+  }
+
+  if (details.release_date) {
+    parts.push(`Released ${details.release_date}`);
+  }
+
+  if (details.album_type) {
+    parts.push(`Spotify ${details.album_type}`);
+  }
+
+  return parts.length > 0 ? parts.join(". ") : null;
+}
+
 function getMediaInclude() {
   return {
     movieDetails: true,
@@ -514,6 +646,65 @@ export async function POST(request: Request) {
       return NextResponse.json({
         imported: true,
         refreshed: false,
+        media,
+      });
+    }
+
+    if (provider === ExternalProvider.SPOTIFY) {
+      if (type !== MediaType.ALBUM) {
+        return NextResponse.json(
+          { error: "Spotify import only supports ALBUM." },
+          { status: 400 }
+        );
+      }
+
+      const details = await getSpotifyAlbumDetails(externalId);
+
+      const artists =
+        details.artists?.map((artist) => artist.name).filter(Boolean) ?? [];
+
+      const primaryArtistName =
+        artists.length > 0 ? artists.join(", ") : null;
+
+      const media = await prisma.mediaItem.create({
+        data: {
+          type: MediaType.ALBUM,
+          title: details.name ?? "Untitled Album",
+          originalTitle: details.name ?? null,
+          description: getSpotifyAlbumDescription(details),
+          releaseDate: normalizeFlexibleDate(details.release_date),
+          coverUrl: getSpotifyImage(details.images),
+          backdropUrl: null,
+          languageCode: null,
+
+          albumDetails: {
+            create: {
+              primaryArtistName,
+              totalTracks: details.total_tracks ?? null,
+              durationSeconds: getSpotifyAlbumDurationSeconds(details),
+            },
+          },
+
+          externalRefs: {
+            create: {
+              provider: ExternalProvider.SPOTIFY,
+              externalId,
+              externalUrl: details.external_urls?.spotify ?? null,
+              rawPayload: {
+                ...details,
+                normalizedArtists: artists,
+              },
+              lastSyncedAt: new Date(),
+            },
+          },
+        },
+        include: getMediaInclude(),
+      });
+
+      return NextResponse.json({
+        imported: true,
+        refreshed: false,
+        mediaId: media.id,
         media,
       });
     }
