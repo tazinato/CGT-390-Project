@@ -498,12 +498,12 @@ export default async function MediaPage({ params }: Props) {
   ];
 
   return (
-    <main style={{ padding: "36px clamp(28px, 5vw, 80px)", width: "100%", maxWidth: "none", margin: 0, boxSizing: "border-box" }}>
+    <main style={{ padding: "36px clamp(24px, 4vw, 64px)", width: "100%", maxWidth: "none", margin: 0, boxSizing: "border-box" }}>
       <section
         style={{
           display: "grid",
-          gridTemplateColumns: "430px minmax(0, 1fr)",
-          gap: 44,
+          gridTemplateColumns: "minmax(360px, 430px) minmax(0, 1fr)",
+          gap: 40,
           alignItems: "start",
           width: "100%",
           maxWidth: "none",
@@ -549,7 +549,7 @@ export default async function MediaPage({ params }: Props) {
                 alt={media.title}
                 style={{
                   display: "block",
-                  width: "min(100%, 760px)",
+                  width: "min(100%, 900px)",
                   maxHeight: 155,
                   objectFit: "contain",
                   objectPosition: "left center",
@@ -633,7 +633,7 @@ export default async function MediaPage({ params }: Props) {
                   fontSize: 17,
                   margin: "14px 0 0",
                   width: "100%",
-                  maxWidth: "none",
+                  maxWidth: "min(100%, 1100px)",
                   display: "-webkit-box",
                   WebkitLineClamp: 3,
                   WebkitBoxOrient: "vertical",

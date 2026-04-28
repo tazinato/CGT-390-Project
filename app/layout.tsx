@@ -40,7 +40,7 @@ export default function RootLayout({
         <main
           style={{
             padding: 20,
-            maxWidth: 1000,
+            maxWidth: "none",
             margin: 0,
           }}
         >
