@@ -446,7 +446,7 @@ export default function FriendsPage() {
 
   if (authLoaded && !currentUser) {
     return (
-      <main style={{ padding: 40, maxWidth: 900 }}>
+      <main style={{ padding: "36px clamp(20px, 4vw, 64px)", width: "100%", maxWidth: "none", margin: 0, boxSizing: "border-box" }}>
         <h1>Friends</h1>
 
         <div
@@ -500,7 +500,7 @@ export default function FriendsPage() {
   }
 
   return (
-    <main style={{ padding: 40, maxWidth: 900 }}>
+    <main style={{ padding: "36px clamp(20px, 4vw, 64px)", width: "100%", maxWidth: "none", margin: 0, boxSizing: "border-box" }}>
       <h1>Friends</h1>
 
       {!authLoaded ? (

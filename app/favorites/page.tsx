@@ -326,7 +326,7 @@ export default function FavoritesPage() {
 
   if (!currentUser && !loading) {
     return (
-      <main style={{ padding: 40, maxWidth: 850 }}>
+      <main style={{ padding: "36px clamp(20px, 4vw, 64px)", width: "100%", maxWidth: "none", margin: 0, boxSizing: "border-box" }}>
         <h1>Set Top 4 Favorites</h1>
         <p>You need to log in before editing favorites.</p>
         <p>
@@ -343,7 +343,7 @@ export default function FavoritesPage() {
   }
 
   return (
-    <main style={{ padding: 40, maxWidth: 850 }}>
+    <main style={{ padding: "36px clamp(20px, 4vw, 64px)", width: "100%", maxWidth: "none", margin: 0, boxSizing: "border-box" }}>
       <h1>Set Top 4 Favorites</h1>
 
       {currentUser && (
