@@ -9,17 +9,27 @@ type Params = {
 
 async function tmdbFetch<T>(path: string) {
   const token = process.env.TMDB_ACCESS_TOKEN;
+  const apiKey = process.env.TMDB_API_KEY;
 
-  if (!token) {
-    throw new Error("TMDB_ACCESS_TOKEN is missing.");
+  const url = new URL(`https://api.themoviedb.org/3/${path}`);
+
+  const headers: Record<string, string> = {
+    accept: "application/json",
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  } else if (apiKey) {
+    url.searchParams.set("api_key", apiKey);
+  } else {
+    throw new Error("TMDB_ACCESS_TOKEN or TMDB_API_KEY is missing.");
   }
 
-  const response = await fetch(`https://api.themoviedb.org/3/${path}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      accept: "application/json",
+  const response = await fetch(url.toString(), {
+    headers,
+    next: {
+      revalidate: 86400,
     },
-    cache: "no-store",
   });
 
   if (!response.ok) {
@@ -63,10 +73,7 @@ export async function GET(_request: NextRequest, context: Params) {
       });
     }
 
-    const tmdbRef = media.externalRefs.find((ref) => {
-      const provider = String(ref.provider).toUpperCase();
-      return provider === "TMDB";
-    });
+    const tmdbRef = media.externalRefs.find((ref) => ref.provider === "TMDB");
 
     if (!tmdbRef?.externalId) {
       return NextResponse.json({

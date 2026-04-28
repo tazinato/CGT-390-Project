@@ -247,7 +247,7 @@ export default function ProfileFriendActions({
           marginBottom: 10,
           display: "inline-block",
           padding: "6px 10px",
-          border: "1px solid #ccc",
+          border: "1px solid var(--app-border)",
           borderRadius: 999,
           background: "#f7f7f7",
           fontSize: 14,

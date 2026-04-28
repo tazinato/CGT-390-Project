@@ -18,7 +18,7 @@ function MediaImportInner() {
 
   const [state, setState] = useState<ImportState>({
     status: "loading",
-    message: "Loading media...",
+    message: "Opening media…",
   });
 
   const missingParams = useMemo(() => {
@@ -83,6 +83,8 @@ function MediaImportInner() {
               data?.item?.title ||
               null,
           });
+
+          router.replace(`/media/${mediaId}`);
         }
       } catch (error) {
         if (!cancelled) {
@@ -102,20 +104,14 @@ function MediaImportInner() {
     return () => {
       cancelled = true;
     };
-  }, [provider, externalId, type, missingParams]);
-
-  useEffect(() => {
-    if (state.status !== "ready") return;
-
-    router.replace(`/media/${state.mediaId}`);
-  }, [state, router]);
+  }, [provider, externalId, type, missingParams, router]);
 
   return (
     <main className="min-h-screen bg-neutral-950 px-4 py-10 text-white">
       <div className="mx-auto max-w-xl rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
         {state.status === "loading" ? (
           <>
-            <h1 className="text-2xl font-semibold">Preparing media page...</h1>
+            <h1 className="text-2xl font-semibold">Opening media…</h1>
             <p className="mt-3 text-neutral-400">{state.message}</p>
           </>
         ) : null}
@@ -136,7 +132,7 @@ function MediaImportInner() {
         {state.status === "ready" ? (
           <>
             <h1 className="text-2xl font-semibold">
-              {state.title ? `Opening ${state.title}...` : "Opening media..."}
+              {state.title ? `Opening ${state.title}…` : "Opening media…"}
             </h1>
             <p className="mt-3 text-neutral-400">
               Taking you to the media overview page.
@@ -160,8 +156,8 @@ export default function MediaImportPage() {
       fallback={
         <main className="min-h-screen bg-neutral-950 px-4 py-10 text-white">
           <div className="mx-auto max-w-xl rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
-            <h1 className="text-2xl font-semibold">Preparing media page...</h1>
-            <p className="mt-3 text-neutral-400">Loading media...</p>
+            <h1 className="text-2xl font-semibold">Opening media…</h1>
+            <p className="mt-3 text-neutral-400">Loading item details.</p>
           </div>
         </main>
       }

@@ -306,10 +306,10 @@ function ResultCover({ item }: { item: MediaResult }) {
         style={{
           width: 140,
           height: 210,
-          border: "1px solid #ccc",
+          border: "1px solid var(--app-border)",
           borderRadius: 10,
           overflow: "hidden",
-          background: "white",
+          background: "var(--app-surface-strong)",
           display: "flex",
           flexDirection: "column",
           flexShrink: 0,
@@ -392,7 +392,7 @@ function ResultCover({ item }: { item: MediaResult }) {
           height: 210,
           objectFit: "cover",
           borderRadius: 10,
-          border: "1px solid #ccc",
+          border: "1px solid var(--app-border)",
           background: "#eee",
           flexShrink: 0,
         }}
@@ -405,7 +405,7 @@ function ResultCover({ item }: { item: MediaResult }) {
       style={{
         width: 140,
         height: 210,
-        border: "1px solid #ccc",
+        border: "1px solid var(--app-border)",
         borderRadius: 10,
         background: "#eee",
         display: "flex",
@@ -951,10 +951,10 @@ export default function AddEntryPage() {
       <section
         style={{
           marginBottom: 30,
-          border: "1px solid #ddd",
+          border: "1px solid var(--app-border)",
           borderRadius: 14,
           padding: 18,
-          background: "white",
+          background: "var(--app-surface-strong)",
         }}
       >
         <h2 style={{ marginTop: 0 }}>Detailed Search</h2>
@@ -1101,7 +1101,7 @@ export default function AddEntryPage() {
               padding: 10,
               width: 520,
               maxWidth: "100%",
-              border: "1px solid #ccc",
+              border: "1px solid var(--app-border)",
               borderRadius: 999,
             }}
           />
@@ -1197,7 +1197,7 @@ export default function AddEntryPage() {
         <section
           style={{
             marginBottom: 24,
-            border: "1px solid #ddd",
+            border: "1px solid var(--app-border)",
             borderRadius: 14,
             background: "#f7f7f7",
             padding: 14,
@@ -1213,10 +1213,10 @@ export default function AddEntryPage() {
 
       <section
         style={{
-          border: "1px solid #ddd",
+          border: "1px solid var(--app-border)",
           borderRadius: 14,
           padding: 18,
-          background: "white",
+          background: "var(--app-surface-strong)",
         }}
       >
         <h2 style={{ marginTop: 0 }}>Log / Review</h2>

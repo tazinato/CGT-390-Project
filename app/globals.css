@@ -45,3 +45,41 @@ body {
 main {
   background: transparent;
 }
+
+/* Soft warm-neutral app theme */
+:root {
+  --app-bg:
+    radial-gradient(circle at top left, rgba(255,255,255,0.92), transparent 32%),
+    linear-gradient(135deg, #f3eee7 0%, #ebe4da 45%, #e6e8ef 100%);
+  --app-surface: rgba(255, 252, 247, 0.82);
+  --app-surface-strong: rgba(255, 252, 247, 0.94);
+  --app-border: rgba(35, 31, 25, 0.13);
+  --app-text: #171717;
+  --app-muted: #5f5b55;
+}
+
+html,
+body {
+  min-height: 100%;
+  background: var(--app-bg) !important;
+  color: var(--app-text);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--app-bg);
+}
+
+main {
+  background: transparent !important;
+}
+
+input,
+textarea,
+select {
+  background-color: rgba(255, 255, 255, 0.72);
+}

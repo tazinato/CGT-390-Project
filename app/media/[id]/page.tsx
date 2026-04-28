@@ -83,10 +83,10 @@ function MediaCoverDisplay({ media }: { media: any }) {
         style={{
           width: 220,
           height: 330,
-          border: "1px solid #ccc",
+          border: "1px solid var(--app-border)",
           borderRadius: 10,
           overflow: "hidden",
-          background: "white",
+          background: "var(--app-surface-strong)",
           display: "flex",
           flexDirection: "column",
         }}
@@ -161,7 +161,7 @@ function MediaCoverDisplay({ media }: { media: any }) {
         style={{
           width: 220,
           borderRadius: 10,
-          border: "1px solid #ccc",
+          border: "1px solid var(--app-border)",
           background: "#eee",
         }}
       />
@@ -173,7 +173,7 @@ function MediaCoverDisplay({ media }: { media: any }) {
       style={{
         width: 220,
         height: 330,
-        border: "1px solid #ccc",
+        border: "1px solid var(--app-border)",
         borderRadius: 10,
         background: "#eee",
         display: "flex",
@@ -332,10 +332,10 @@ function PersonScroller({
             style={{
               width: 130,
               flex: "0 0 auto",
-              border: "1px solid #ccc",
+              border: "1px solid var(--app-border)",
               borderRadius: 10,
               padding: 10,
-              background: "white",
+              background: "var(--app-surface-strong)",
             }}
           >
             <div
@@ -622,7 +622,7 @@ export default async function MediaPage({ params }: Props) {
                 maxWidth: 900,
                 borderRadius: 12,
                 overflow: "hidden",
-                border: "1px solid #ccc",
+                border: "1px solid var(--app-border)",
                 background: "black",
               }}
             >
@@ -681,7 +681,7 @@ export default async function MediaPage({ params }: Props) {
             <article
               key={entry.id}
               style={{
-                border: "1px solid #ccc",
+                border: "1px solid var(--app-border)",
                 borderRadius: 10,
                 padding: 16,
                 marginBottom: 16,

@@ -245,10 +245,10 @@ function MediaCoverCard({ media }: { media: Media }) {
         style={{
           width: 160,
           height: 240,
-          border: "1px solid #ccc",
+          border: "1px solid var(--app-border)",
           borderRadius: 8,
           overflow: "hidden",
-          background: "white",
+          background: "var(--app-surface-strong)",
           display: "flex",
           flexDirection: "column",
           flexShrink: 0,
@@ -331,7 +331,7 @@ function MediaCoverCard({ media }: { media: Media }) {
           objectFit: "cover",
           borderRadius: 8,
           flexShrink: 0,
-          border: "1px solid #ccc",
+          border: "1px solid var(--app-border)",
           background: "#eee",
         }}
       />
@@ -343,7 +343,7 @@ function MediaCoverCard({ media }: { media: Media }) {
       style={{
         width: 160,
         height: 240,
-        border: "1px solid #ccc",
+        border: "1px solid var(--app-border)",
         borderRadius: 8,
         display: "flex",
         alignItems: "center",
@@ -450,7 +450,7 @@ function PopularMovieScroller({ events }: { events: FeedEvent[] }) {
                     height: 240,
                     objectFit: "cover",
                     borderRadius: 8,
-                    border: "1px solid #ccc",
+                    border: "1px solid var(--app-border)",
                     background: "#eee",
                     display: "block",
                   }}
@@ -460,7 +460,7 @@ function PopularMovieScroller({ events }: { events: FeedEvent[] }) {
                   style={{
                     width: 160,
                     height: 240,
-                    border: "1px solid #ccc",
+                    border: "1px solid var(--app-border)",
                     borderRadius: 8,
                     background: "#eee",
                     display: "flex",
@@ -536,7 +536,7 @@ function PopularTvScroller({ events }: { events: FeedEvent[] }) {
                     height: 240,
                     objectFit: "cover",
                     borderRadius: 8,
-                    border: "1px solid #ccc",
+                    border: "1px solid var(--app-border)",
                     background: "#eee",
                     display: "block",
                   }}
@@ -546,7 +546,7 @@ function PopularTvScroller({ events }: { events: FeedEvent[] }) {
                   style={{
                     width: 160,
                     height: 240,
-                    border: "1px solid #ccc",
+                    border: "1px solid var(--app-border)",
                     borderRadius: 8,
                     background: "#eee",
                     display: "flex",
@@ -622,7 +622,7 @@ function PopularAlbumScroller({ events }: { events: FeedEvent[] }) {
                     height: 160,
                     objectFit: "cover",
                     borderRadius: 8,
-                    border: "1px solid #ccc",
+                    border: "1px solid var(--app-border)",
                     background: "#eee",
                     display: "block",
                   }}
@@ -632,7 +632,7 @@ function PopularAlbumScroller({ events }: { events: FeedEvent[] }) {
                   style={{
                     width: 160,
                     height: 160,
-                    border: "1px solid #ccc",
+                    border: "1px solid var(--app-border)",
                     borderRadius: 8,
                     background: "#eee",
                     display: "flex",
@@ -722,7 +722,7 @@ function PopularBookScroller({ events }: { events: FeedEvent[] }) {
                     height: 240,
                     objectFit: "cover",
                     borderRadius: 8,
-                    border: "1px solid #ccc",
+                    border: "1px solid var(--app-border)",
                     background: "#eee",
                     display: "block",
                   }}
@@ -732,7 +732,7 @@ function PopularBookScroller({ events }: { events: FeedEvent[] }) {
                   style={{
                     width: 160,
                     height: 240,
-                    border: "1px solid #ccc",
+                    border: "1px solid var(--app-border)",
                     borderRadius: 8,
                     background: "#eee",
                     display: "flex",
@@ -822,7 +822,7 @@ function PopularGameScroller({ events }: { events: FeedEvent[] }) {
                     height: 240,
                     objectFit: "cover",
                     borderRadius: 8,
-                    border: "1px solid #ccc",
+                    border: "1px solid var(--app-border)",
                     background: "#eee",
                     display: "block",
                   }}
@@ -832,7 +832,7 @@ function PopularGameScroller({ events }: { events: FeedEvent[] }) {
                   style={{
                     width: 160,
                     height: 240,
-                    border: "1px solid #ccc",
+                    border: "1px solid var(--app-border)",
                     borderRadius: 8,
                     background: "#eee",
                     display: "flex",
@@ -1203,8 +1203,8 @@ export default function FeedPage() {
           style={{
             padding: "8px 12px",
             borderRadius: 8,
-            border: "1px solid #ccc",
-            background: "white",
+            border: "1px solid var(--app-border)",
+            background: "var(--app-surface-strong)",
             marginLeft: 8,
             cursor: loading || (scope !== "popular" && !currentUser) ? "not-allowed" : "pointer",
           }}
@@ -1252,13 +1252,13 @@ export default function FeedPage() {
               <article
                 key={`${event.id}-${media.externalId || media.id}`}
                 style={{
-                  border: "1px solid #ddd",
+                  border: "1px solid var(--app-border)",
                   borderRadius: 12,
                   padding: 16,
                   display: "flex",
                   gap: 18,
                   alignItems: "flex-start",
-                  background: "white",
+                  background: "var(--app-surface-strong)",
                 }}
               >
                 <a href={mediaHref} style={{ textDecoration: "none" }}>

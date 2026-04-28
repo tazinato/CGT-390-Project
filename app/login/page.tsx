@@ -166,7 +166,7 @@ export default function LoginPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#fff",
+        background: "var(--app-bg)",
       }}
     >
       <style>
@@ -188,10 +188,10 @@ export default function LoginPage() {
           maxWidth: 980,
           display: "grid",
           gridTemplateColumns: "minmax(0, 1fr) 420px",
-          border: "1px solid #ddd",
+          border: "1px solid var(--app-border)",
           borderRadius: 28,
           overflow: "hidden",
-          background: "white",
+          background: "var(--app-surface-strong)",
           boxShadow: "0 24px 70px rgba(0,0,0,0.10)",
         }}
       >
@@ -356,7 +356,7 @@ export default function LoginPage() {
                 width: "100%",
                 boxSizing: "border-box",
                 padding: "13px 14px",
-                border: "1px solid #ccc",
+                border: "1px solid var(--app-border)",
                 borderRadius: 14,
                 fontSize: 15,
                 outline: "none",
@@ -387,7 +387,7 @@ export default function LoginPage() {
                 width: "100%",
                 boxSizing: "border-box",
                 padding: "13px 14px",
-                border: "1px solid #ccc",
+                border: "1px solid var(--app-border)",
                 borderRadius: 14,
                 fontSize: 15,
                 outline: "none",

@@ -102,7 +102,7 @@ export default function NavBar() {
           style={{
             width: "100%",
             padding: "9px 12px",
-            border: "1px solid #ccc",
+            border: "1px solid var(--app-border)",
             borderRadius: 999,
             fontSize: 14,
           }}

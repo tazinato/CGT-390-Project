@@ -226,7 +226,7 @@ function SocialBadge({ socialInfo }: { socialInfo: SocialInfo }) {
       style={{
         display: "inline-block",
         padding: "6px 10px",
-        border: "1px solid #ccc",
+        border: "1px solid var(--app-border)",
         borderRadius: 999,
         background: "#f7f7f7",
         fontSize: 14,
@@ -282,10 +282,10 @@ function StatCard({
   return (
     <div
       style={{
-        border: "1px solid #ddd",
+        border: "1px solid var(--app-border)",
         borderRadius: 12,
         padding: 14,
-        background: "white",
+        background: "var(--app-surface-strong)",
       }}
     >
       <div style={{ fontSize: 24, fontWeight: 800 }}>{value}</div>
@@ -301,10 +301,10 @@ function MediaCoverCard({ media }: { media: Media }) {
         style={{
           width: 160,
           height: 240,
-          border: "1px solid #ccc",
+          border: "1px solid var(--app-border)",
           borderRadius: 8,
           overflow: "hidden",
-          background: "white",
+          background: "var(--app-surface-strong)",
           display: "flex",
           flexDirection: "column",
           flexShrink: 0,
@@ -387,7 +387,7 @@ function MediaCoverCard({ media }: { media: Media }) {
           objectFit: "cover",
           borderRadius: 8,
           flexShrink: 0,
-          border: "1px solid #ccc",
+          border: "1px solid var(--app-border)",
           background: "#eee",
         }}
       />
@@ -399,7 +399,7 @@ function MediaCoverCard({ media }: { media: Media }) {
       style={{
         width: 160,
         height: 240,
-        border: "1px solid #ccc",
+        border: "1px solid var(--app-border)",
         borderRadius: 8,
         display: "flex",
         alignItems: "center",
@@ -503,14 +503,14 @@ function EntryCard({ entry }: { entry: ProfileEntry }) {
   return (
     <article
       style={{
-        border: "1px solid #ddd",
+        border: "1px solid var(--app-border)",
         padding: 16,
         marginBottom: 16,
         borderRadius: 12,
         display: "flex",
         gap: 18,
         alignItems: "flex-start",
-        background: "white",
+        background: "var(--app-surface-strong)",
       }}
     >
       <a href={`/media/${entry.media.id}`} style={{ textDecoration: "none" }}>

@@ -288,13 +288,13 @@ export default function MediaActions({
 
       style={{
 
-        border: "1px solid #ccc",
+        border: "1px solid var(--app-border)",
 
         borderRadius: 12,
 
         padding: 18,
 
-        background: "white",
+        background: "var(--app-surface-strong)",
 
       }}
 
@@ -406,9 +406,9 @@ export default function MediaActions({
 
                 borderRadius: 999,
 
-                border: "1px solid #ccc",
+                border: "1px solid var(--app-border)",
 
-                background: "white",
+                background: "var(--app-surface-strong)",
 
                 cursor: saving ? "not-allowed" : "pointer",
 
@@ -474,7 +474,7 @@ export default function MediaActions({
 
             borderRadius: 8,
 
-            border: "1px solid #ccc",
+            border: "1px solid var(--app-border)",
 
             font: "inherit",
 

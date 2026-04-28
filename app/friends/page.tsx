@@ -75,11 +75,11 @@ function UserCard({
   return (
     <div
       style={{
-        border: "1px solid #ddd",
+        border: "1px solid var(--app-border)",
         borderRadius: 10,
         padding: 14,
         marginBottom: 10,
-        background: "white",
+        background: "var(--app-surface-strong)",
         display: "flex",
         justifyContent: "space-between",
         gap: 16,
@@ -473,7 +473,7 @@ export default function FriendsPage() {
               color: "black",
               fontWeight: 700,
               marginRight: 10,
-              background: "white",
+              background: "var(--app-surface-strong)",
             }}
           >
             Log In
@@ -484,12 +484,12 @@ export default function FriendsPage() {
             style={{
               display: "inline-block",
               padding: "8px 12px",
-              border: "1px solid #ccc",
+              border: "1px solid var(--app-border)",
               borderRadius: 8,
               textDecoration: "none",
               color: "black",
               fontWeight: 700,
-              background: "white",
+              background: "var(--app-surface-strong)",
             }}
           >
             Sign Up

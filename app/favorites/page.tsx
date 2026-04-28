@@ -454,7 +454,7 @@ export default function FavoritesPage() {
                     ? "2px solid black"
                     : "1px solid #ccc",
                 borderRadius: 8,
-                background: "white",
+                background: "var(--app-surface-strong)",
                 cursor: loading ? "not-allowed" : "pointer",
               }}
             >

@@ -59,10 +59,10 @@ function ResultCover({ result }: { result: SearchResult }) {
         style={{
           width: 140,
           height: 210,
-          border: "1px solid #ccc",
+          border: "1px solid var(--app-border)",
           borderRadius: 10,
           overflow: "hidden",
-          background: "white",
+          background: "var(--app-surface-strong)",
           display: "flex",
           flexDirection: "column",
           flexShrink: 0,
@@ -145,7 +145,7 @@ function ResultCover({ result }: { result: SearchResult }) {
           height: 210,
           objectFit: "cover",
           borderRadius: 10,
-          border: "1px solid #ccc",
+          border: "1px solid var(--app-border)",
           background: "#eee",
           flexShrink: 0,
           display: "block",
@@ -159,7 +159,7 @@ function ResultCover({ result }: { result: SearchResult }) {
       style={{
         width: 140,
         height: 210,
-        border: "1px solid #ccc",
+        border: "1px solid var(--app-border)",
         borderRadius: 10,
         background: "#eee",
         display: "flex",
@@ -180,13 +180,13 @@ function SearchResultCard({ result }: { result: SearchResult }) {
     <a
       href={result.href}
       style={{
-        border: "1px solid #ddd",
+        border: "1px solid var(--app-border)",
         borderRadius: 14,
         padding: 16,
         display: "flex",
         gap: 18,
         alignItems: "flex-start",
-        background: "white",
+        background: "var(--app-surface-strong)",
         color: "inherit",
         textDecoration: "none",
       }}
@@ -235,7 +235,7 @@ function SearchResultCard({ result }: { result: SearchResult }) {
             border: "1px solid #222",
             fontWeight: 700,
             fontSize: 14,
-            background: "white",
+            background: "var(--app-surface-strong)",
           }}
         >
           {getActionLabel(result)}
@@ -360,7 +360,7 @@ function SearchPageInner() {
               boxSizing: "border-box",
               padding: "12px 14px",
               borderRadius: 10,
-              border: "1px solid #ccc",
+              border: "1px solid var(--app-border)",
               font: "inherit",
             }}
           />
