@@ -173,7 +173,7 @@ export default function MediaActions({
     <section
       className="media-actions-root"
       style={{
-        marginTop: open ? 2 : 28,
+        marginTop: open ? 0 : 10,
         width: "100%",
         maxWidth: "none",
       }}
@@ -206,6 +206,7 @@ export default function MediaActions({
             background: "var(--app-surface-strong, rgba(255,255,255,0.9))",
             width: "100%",
             maxWidth: "none",
+            minHeight: 245,
             boxSizing: "border-box",
           }}
         >
@@ -215,14 +216,14 @@ export default function MediaActions({
               gridTemplateColumns: "minmax(0, 1fr) 300px",
               gap: 18,
               alignItems: "stretch",
+              minHeight: 220,
             }}
           >
             <div
               style={{
                 minWidth: 0,
                 display: "flex",
-                flexDirection: "column",
-              }}
+                flexDirection: "column",              }}
             >
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <StatusButton value="WISHLIST" label={copy.wishlist} />
@@ -272,8 +273,8 @@ export default function MediaActions({
                     fontSize: 13,
                     lineHeight: 1.25,
                     resize: "vertical",
-                    minHeight: 118,
-                    maxHeight: 150,
+                    minHeight: 142,
+                    maxHeight: 190,
                     flex: 1,
                     background: saving ? "#f6f6f6" : "rgba(255,255,255,0.76)",
                   }}
@@ -290,7 +291,7 @@ export default function MediaActions({
                 alignItems: "flex-end",
                 justifyContent: "space-between",
                 gap: 10,
-                minHeight: 170,
+                minHeight: 220,
               }}
             >
               <div
