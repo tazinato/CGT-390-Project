@@ -502,8 +502,8 @@ export default async function MediaPage({ params }: Props) {
       <section
         style={{
           display: "grid",
-          gridTemplateColumns: "clamp(310px, 28vw, 430px) minmax(0, 1fr)",
-          gap: 42,
+          gridTemplateColumns: "clamp(340px, 30vw, 430px) minmax(0, 1fr)",
+          gap: 38,
           alignItems: "start",
           width: "100%",
           maxWidth: "none",
@@ -549,8 +549,8 @@ export default async function MediaPage({ params }: Props) {
                 alt={media.title}
                 style={{
                   display: "block",
-                  width: "min(100%, 620px)",
-                  maxHeight: 150,
+                  width: "min(100%, 780px)",
+                  maxHeight: 155,
                   objectFit: "contain",
                   objectPosition: "left center",
                 }}
@@ -629,13 +629,13 @@ export default async function MediaPage({ params }: Props) {
             {media.description ? (
               <p
                 style={{
-                  lineHeight: 1.42,
+                  lineHeight: 1.38,
                   fontSize: 18,
                   margin: "14px 0 0",
                   width: "100%",
-                  maxWidth: 980,
+                  maxWidth: "none",
                   display: "-webkit-box",
-                  WebkitLineClamp: 6,
+                  WebkitLineClamp: 4,
                   WebkitBoxOrient: "vertical",
                   overflow: "hidden",
                 }}
@@ -650,6 +650,7 @@ export default async function MediaPage({ params }: Props) {
               width: "100%",
               maxWidth: "none",
               marginTop: 16,
+              alignSelf: "stretch",
             }}
           >
             <MediaActions
@@ -682,7 +683,7 @@ export default async function MediaPage({ params }: Props) {
               style={{
                 aspectRatio: "16 / 9",
                 width: "100%",
-                maxWidth: 920,
+                maxWidth: "none",
                 borderRadius: 12,
                 overflow: "hidden",
                 border: "1px solid var(--app-border)",
