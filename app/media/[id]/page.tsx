@@ -446,30 +446,17 @@ export default async function MediaPage({ params }: Props) {
 
           {isTmdbVisualMedia && tmdbExtras.logoUrl ? (
             <div style={{ margin: "10px 0 16px" }}>
-              <div
+              <img
+                src={tmdbExtras.logoUrl}
+                alt={media.title}
                 style={{
-                  display: "inline-flex",
-                  padding: "14px 18px",
-                  borderRadius: 18,
-                  background:
-                    "linear-gradient(135deg, rgba(0,0,0,0.72), rgba(0,0,0,0.38))",
-                  boxShadow: "0 18px 40px rgba(0,0,0,0.22)",
-                  border: "1px solid rgba(255,255,255,0.14)",
+                  display: "block",
+                  maxWidth: 430,
+                  maxHeight: 155,
+                  objectFit: "contain",
+                  objectPosition: "left center",
                 }}
-              >
-                <img
-                  src={tmdbExtras.logoUrl}
-                  alt={media.title}
-                  style={{
-                    display: "block",
-                    maxWidth: 430,
-                    maxHeight: 155,
-                    objectFit: "contain",
-                    objectPosition: "left center",
-                    filter: "drop-shadow(0 3px 8px rgba(0,0,0,0.65))",
-                  }}
-                />
-              </div>
+              />
 
               {releaseYear ? (
                 <p

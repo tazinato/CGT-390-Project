@@ -24,3 +24,24 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Soft neutral app background */
+html {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.95), transparent 34%),
+    linear-gradient(135deg, #f7f3ed 0%, #eee8df 44%, #e8eaf0 100%);
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.95), transparent 34%),
+    linear-gradient(135deg, #f7f3ed 0%, #eee8df 44%, #e8eaf0 100%);
+  color: #171717;
+}
+
+main {
+  background: transparent;
+}

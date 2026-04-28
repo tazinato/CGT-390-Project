@@ -83,7 +83,8 @@ export default function NavBar() {
         gridTemplateColumns: "auto minmax(260px, 520px) auto",
         alignItems: "center",
         gap: 20,
-        background: "white",
+        background: "rgba(255,255,255,0.78)",
+        backdropFilter: "blur(18px)",
       }}
     >
       <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
