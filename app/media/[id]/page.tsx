@@ -81,8 +81,8 @@ function MediaCoverDisplay({ media }: { media: any }) {
     return (
       <div
         style={{
-          width: 220,
-          height: 330,
+          width: 280,
+          height: 420,
           border: "1px solid var(--app-border)",
           borderRadius: 10,
           overflow: "hidden",
@@ -109,8 +109,8 @@ function MediaCoverDisplay({ media }: { media: any }) {
 
         <div
           style={{
-            width: 220,
-            height: 220,
+            width: 280,
+            height: 280,
             background: "#eee",
             display: "flex",
             alignItems: "center",
@@ -159,10 +159,11 @@ function MediaCoverDisplay({ media }: { media: any }) {
         src={media.coverUrl}
         alt={`${media.title} cover`}
         style={{
-          width: 220,
-          borderRadius: 10,
+          width: 280,
+          borderRadius: 14,
           border: "1px solid var(--app-border)",
           background: "#eee",
+          boxShadow: "0 18px 45px rgba(0,0,0,0.12)",
         }}
       />
     );
@@ -171,8 +172,8 @@ function MediaCoverDisplay({ media }: { media: any }) {
   return (
     <div
       style={{
-        width: 220,
-        height: 330,
+        width: 280,
+        height: 420,
         border: "1px solid var(--app-border)",
         borderRadius: 10,
         background: "#eee",
@@ -426,13 +427,21 @@ export default async function MediaPage({ params }: Props) {
 
   const releaseYear = getYear(media.releaseDate);
   const isTmdbVisualMedia = media.type === "MOVIE" || media.type === "SHOW";
+  const director =
+    tmdbExtras.directors.find((person) =>
+      String(person.role || "").toLowerCase().includes("director")
+    ) ?? tmdbExtras.directors[0] ?? null;
+  const castAndCrew = [
+    ...(director ? [director] : []),
+    ...tmdbExtras.cast.filter((person) => person.id !== director?.id),
+  ];
 
   return (
     <main style={{ padding: 40, maxWidth: 1000 }}>
       <section
         style={{
           display: "grid",
-          gridTemplateColumns: "220px 1fr",
+          gridTemplateColumns: "280px 1fr",
           gap: 30,
           alignItems: "start",
         }}
@@ -602,7 +611,7 @@ export default async function MediaPage({ params }: Props) {
         </div>
       </section>
 
-      <section style={{ marginTop: 30 }}>
+      <section style={{ marginTop: 14 }}>
         <MediaActions
           mediaId={String(media.id)}
           mediaType={media.type}
@@ -661,14 +670,7 @@ export default async function MediaPage({ params }: Props) {
       </section>
 
       {isTmdbVisualMedia && (
-        <>
-          <PersonScroller
-            title="Director / Creator"
-            people={tmdbExtras.directors}
-          />
-
-          <PersonScroller title="Main Cast" people={tmdbExtras.cast} />
-        </>
+        <PersonScroller title="Cast & Crew" people={castAndCrew} />
       )}
 
       <section style={{ marginTop: 30 }}>
