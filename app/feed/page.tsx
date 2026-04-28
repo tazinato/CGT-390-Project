@@ -1146,7 +1146,7 @@ export default function FeedPage() {
   }, []);
 
   return (
-    <main style={{ padding: "36px 48px", width: "100vw", maxWidth: "none", marginLeft: "calc(50% - 50vw)", marginRight: "calc(50% - 50vw)", boxSizing: "border-box", overflowX: "hidden" }}>
+    <main style={{ padding: "36px clamp(28px, 5vw, 80px)", width: "100%", maxWidth: "none", margin: 0, boxSizing: "border-box" }}>
       <h1>Feed</h1>
 
       {!authLoaded ? null : currentUser ? (
