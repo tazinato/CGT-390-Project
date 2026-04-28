@@ -154,11 +154,11 @@ export default function MediaActions({
         disabled={saving}
         onClick={() => save(value)}
         style={{
-          padding: "5px 8px",
+          padding: "5px 10px",
           borderRadius: 999,
           border: active ? "2px solid black" : "1px solid var(--app-border, #ccc)",
-          background: active ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.72)",
-          fontWeight: active ? 800 : 700,
+          background: active ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.74)",
+          fontWeight: 800,
           fontSize: 12,
           cursor: saving ? "not-allowed" : "pointer",
         }}
@@ -175,12 +175,12 @@ export default function MediaActions({
         type="button"
         onClick={() => setOpen((value) => !value)}
         style={{
-          padding: "7px 11px",
+          padding: "7px 13px",
           borderRadius: 999,
           border: "1px solid #222",
-          background: open ? "black" : "rgba(255,255,255,0.76)",
+          background: open ? "black" : "rgba(255,255,255,0.72)",
           color: open ? "white" : "black",
-          fontWeight: 850,
+          fontWeight: 900,
           fontSize: 13,
           cursor: "pointer",
         }}
@@ -191,12 +191,13 @@ export default function MediaActions({
       {open ? (
         <div
           style={{
-            marginTop: 12,
+            marginTop: 14,
             border: "1px solid var(--app-border, #ccc)",
-            borderRadius: 14,
-            padding: 12,
-            background: "var(--app-surface-strong, rgba(255,255,255,0.88))",
-            maxWidth: 620,
+            borderRadius: 16,
+            padding: 14,
+            background: "var(--app-surface-strong, rgba(255,255,255,0.9))",
+            width: "100%",
+            boxSizing: "border-box",
           }}
         >
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -224,7 +225,7 @@ export default function MediaActions({
             <div
               style={{
                 display: "flex",
-                gap: 5,
+                gap: 6,
                 flexWrap: "wrap",
                 alignItems: "center",
               }}
@@ -238,8 +239,8 @@ export default function MediaActions({
                   disabled={saving}
                   onClick={() => setRating(value)}
                   style={{
-                    width: 17,
-                    height: 17,
+                    width: 15,
+                    height: 15,
                     borderRadius: 999,
                     border:
                       rating === value
@@ -258,13 +259,13 @@ export default function MediaActions({
                   disabled={saving}
                   onClick={() => setRating(0)}
                   style={{
-                    padding: "3px 7px",
+                    padding: "3px 8px",
                     borderRadius: 999,
                     border: "1px solid var(--app-border, #ccc)",
                     background: "rgba(255,255,255,0.72)",
                     cursor: saving ? "not-allowed" : "pointer",
                     fontSize: 12,
-                    fontWeight: 700,
+                    fontWeight: 800,
                   }}
                 >
                   Clear
@@ -290,21 +291,21 @@ export default function MediaActions({
               id="review-text"
               value={review}
               onChange={(event) => setReview(event.target.value)}
-              rows={2}
+              rows={3}
               disabled={saving}
               placeholder={copy.placeholder}
               style={{
                 display: "block",
                 width: "100%",
                 boxSizing: "border-box",
-                padding: 9,
-                borderRadius: 10,
+                padding: 10,
+                borderRadius: 12,
                 border: "1px solid var(--app-border, #ccc)",
                 font: "inherit",
                 fontSize: 14,
                 lineHeight: 1.35,
                 resize: "vertical",
-                minHeight: 58,
+                minHeight: 76,
                 background: saving ? "#f6f6f6" : "rgba(255,255,255,0.76)",
               }}
             />
@@ -316,12 +317,12 @@ export default function MediaActions({
             onClick={() => save()}
             style={{
               marginTop: 10,
-              padding: "7px 10px",
+              padding: "7px 12px",
               borderRadius: 999,
               border: "1px solid #222",
               background: "black",
               color: "white",
-              fontWeight: 800,
+              fontWeight: 900,
               fontSize: 13,
               cursor: saving ? "not-allowed" : "pointer",
               opacity: saving ? 0.7 : 1,

@@ -306,6 +306,61 @@ async function getTmdbExtras(media: any): Promise<TmdbExtras> {
   };
 }
 
+function MediaInfoRow({ media }: { media: any }) {
+  const items: string[] = [];
+
+  if (media.movieDetails?.runtimeMinutes) {
+    items.push(`${media.movieDetails.runtimeMinutes} min`);
+  }
+
+  if (media.showDetails?.seasonsCount) {
+    items.push(`Seasons: ${media.showDetails.seasonsCount}`);
+  }
+
+  if (media.showDetails?.episodesCount) {
+    items.push(`Episodes: ${media.showDetails.episodesCount}`);
+  }
+
+  if (media.showDetails?.showStatus) {
+    items.push(media.showDetails.showStatus);
+  }
+
+  if (media.bookDetails?.pageCount) {
+    items.push(`${media.bookDetails.pageCount} pages`);
+  }
+
+  if (media.albumDetails?.primaryArtistName) {
+    items.push(media.albumDetails.primaryArtistName);
+  }
+
+  if (media.albumDetails?.totalTracks) {
+    items.push(`${media.albumDetails.totalTracks} tracks`);
+  }
+
+  if (media.gameDetails?.timeToBeatHours) {
+    items.push(`${media.gameDetails.timeToBeatHours} hrs`);
+  }
+
+  if (items.length === 0) return null;
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: 18,
+        flexWrap: "wrap",
+        alignItems: "center",
+        margin: "10px 0 10px",
+        fontSize: 15,
+      }}
+    >
+      {items.map((item) => (
+        <strong key={item}>{item}</strong>
+      ))}
+    </div>
+  );
+}
+
 function PersonScroller({
   title,
   people,
@@ -331,7 +386,7 @@ function PersonScroller({
           <div
             key={`${person.id}-${person.role}`}
             style={{
-              width: 130,
+              width: 118,
               flex: "0 0 auto",
               border: "1px solid var(--app-border)",
               borderRadius: 10,
@@ -342,7 +397,7 @@ function PersonScroller({
             <div
               style={{
                 width: "100%",
-                height: 160,
+                height: 132,
                 borderRadius: 8,
                 background: "#eee",
                 overflow: "hidden",
@@ -372,7 +427,7 @@ function PersonScroller({
               style={{
                 display: "block",
                 marginTop: 8,
-                fontSize: 14,
+                fontSize: 12,
                 lineHeight: 1.2,
               }}
             >
@@ -384,7 +439,7 @@ function PersonScroller({
                 style={{
                   display: "block",
                   marginTop: 4,
-                  fontSize: 12,
+                  fontSize: 11,
                   color: "#666",
                   lineHeight: 1.2,
                 }}
@@ -437,186 +492,190 @@ export default async function MediaPage({ params }: Props) {
   ];
 
   return (
-    <main style={{ padding: 40, maxWidth: 1000 }}>
+    <main style={{ padding: "56px 40px", maxWidth: 1320, margin: "0 auto" }}>
       <section
         style={{
           display: "grid",
-          gridTemplateColumns: "280px 1fr",
-          gap: 30,
-          alignItems: "start",
+          gridTemplateColumns: "minmax(280px, 340px) minmax(0, 1fr)",
+          gap: 42,
+          alignItems: "stretch",
+          maxWidth: 1180,
+          margin: "0 auto",
         }}
       >
-        <MediaCoverDisplay media={media} />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "stretch",
+          }}
+        >
+          <MediaCoverDisplay media={media} />
+        </div>
 
-        <div>
-          <p style={{ margin: 0, textTransform: "uppercase", opacity: 0.7 }}>
+        <div
+          style={{
+            minWidth: 0,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-start",
+            paddingTop: 18,
+          }}
+        >
+          <p
+            style={{
+              margin: 0,
+              textTransform: "uppercase",
+              opacity: 0.7,
+              fontWeight: 800,
+              letterSpacing: "0.04em",
+            }}
+          >
             {media.type}
           </p>
 
           {isTmdbVisualMedia && tmdbExtras.logoUrl ? (
-            <div style={{ margin: "10px 0 16px" }}>
+            <div style={{ margin: "14px 0 18px" }}>
               <img
                 src={tmdbExtras.logoUrl}
                 alt={media.title}
                 style={{
                   display: "block",
-                  maxWidth: 430,
-                  maxHeight: 155,
+                  width: "min(100%, 560px)",
+                  maxHeight: 180,
                   objectFit: "contain",
                   objectPosition: "left center",
                 }}
               />
-
-              {releaseYear ? (
-                <p
-                  style={{
-                    margin: "10px 0 0",
-                    fontWeight: 800,
-                    color: "#333",
-                  }}
-                >
-                  {releaseYear}
-                </p>
-              ) : null}
             </div>
           ) : (
-            <h1 style={{ marginBottom: 8 }}>
+            <h1
+              style={{
+                margin: "10px 0 12px",
+                fontSize: 52,
+                lineHeight: 0.95,
+                letterSpacing: "-0.055em",
+              }}
+            >
               {media.title}
               {releaseYear && <span> ({releaseYear})</span>}
             </h1>
           )}
 
-          {media.originalTitle && media.originalTitle !== media.title && (
-            <p>
-              <strong>Original title:</strong> {media.originalTitle}
-            </p>
-          )}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1fr) auto",
+              gap: 26,
+              alignItems: "start",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: 18,
+                  flexWrap: "wrap",
+                }}
+              >
+                <h2
+                  style={{
+                    margin: 0,
+                    fontSize: 28,
+                    lineHeight: 1,
+                    letterSpacing: "-0.035em",
+                  }}
+                >
+                  {releaseYear ? `${media.title} (${releaseYear})` : media.title}
+                </h2>
 
-          {media.description && (
-            <p style={{ lineHeight: 1.5 }}>{media.description}</p>
-          )}
+                <MediaInfoRow media={media} />
+              </div>
 
-          <div style={{ marginTop: 20 }}>
-            <h2>Details</h2>
+              {media.originalTitle && media.originalTitle !== media.title ? (
+                <p style={{ marginBottom: 8 }}>
+                  <strong>Original title:</strong> {media.originalTitle}
+                </p>
+              ) : null}
 
-            {media.movieDetails && (
-              <p>
-                <strong>Runtime:</strong>{" "}
-                {media.movieDetails.runtimeMinutes ?? "Unknown"} minutes
+              {media.description ? (
+                <p
+                  style={{
+                    lineHeight: 1.45,
+                    fontSize: 20,
+                    margin: "12px 0 0",
+                    maxWidth: 760,
+                  }}
+                >
+                  {media.description}
+                </p>
+              ) : null}
+            </div>
+
+            <div
+              style={{
+                minWidth: 210,
+                fontSize: 15,
+                lineHeight: 1.35,
+                paddingTop: 4,
+              }}
+            >
+              <p style={{ margin: 0 }}>
+                <strong>Average rating:</strong>{" "}
+                {averageRating === null
+                  ? "No ratings yet"
+                  : `${averageRating.toFixed(1)}/10`}
               </p>
-            )}
 
-            {media.showDetails && (
-              <>
-                <p>
-                  <strong>Seasons:</strong>{" "}
-                  {media.showDetails.seasonsCount ?? "Unknown"}
-                </p>
-                <p>
-                  <strong>Episodes:</strong>{" "}
-                  {media.showDetails.episodesCount ?? "Unknown"}
-                </p>
-                <p>
-                  <strong>Status:</strong>{" "}
-                  {media.showDetails.showStatus ?? "Unknown"}
-                </p>
-              </>
-            )}
-
-            {media.bookDetails && (
-              <>
-                <p>
-                  <strong>Pages:</strong>{" "}
-                  {media.bookDetails.pageCount ?? "Unknown"}
-                </p>
-                <p>
-                  <strong>Estimated read time:</strong>{" "}
-                  {media.bookDetails.estimatedReadTimeMinutes
-                    ? `${media.bookDetails.estimatedReadTimeMinutes} minutes`
-                    : "Unknown"}
-                </p>
-                <p>
-                  <strong>ISBN-13:</strong>{" "}
-                  {media.bookDetails.isbn13 ?? "Unknown"}
-                </p>
-              </>
-            )}
-
-            {media.albumDetails && (
-              <>
-                <p>
-                  <strong>Primary artist:</strong>{" "}
-                  {media.albumDetails.primaryArtistName ?? "Unknown"}
-                </p>
-                <p>
-                  <strong>Tracks:</strong>{" "}
-                  {media.albumDetails.totalTracks ?? "Unknown"}
-                </p>
-                <p>
-                  <strong>Duration:</strong>{" "}
-                  {formatDuration(media.albumDetails.durationSeconds)}
-                </p>
-              </>
-            )}
-
-            {media.gameDetails && (
-              <>
-                <p>
-                  <strong>Time to beat:</strong>{" "}
-                  {media.gameDetails.timeToBeatHours
-                    ? `${media.gameDetails.timeToBeatHours} hours`
-                    : "Unknown"}
-                </p>
-                <p>
-                  <strong>Multiplayer:</strong>{" "}
-                  {media.gameDetails.multiplayer ? "Yes" : "No"}
-                </p>
-              </>
-            )}
-
-            {media.genres.length > 0 && (
-              <p>
-                <strong>Genres:</strong>{" "}
-                {media.genres.map((item: any) => item.genre.name).join(", ")}
+              <p style={{ margin: "4px 0 0" }}>
+                <strong>Total entries:</strong> {media.entries.length}
               </p>
-            )}
-
-            {media.externalRefs.length > 0 && (
-              <p>
-                <strong>External source:</strong>{" "}
-                {media.externalRefs.map((ref: any) => ref.provider).join(", ")}
-              </p>
-            )}
-
-            {media.externalRefs.length > 0 && (
-              <p>
-                <strong>External links:</strong>{" "}
-                {media.externalRefs
-                  .filter((ref: any) => ref.externalUrl)
-                  .map((ref: any, index: number) => (
-                    <span key={ref.id}>
-                      {index > 0 && ", "}
-                      <a
-                        href={ref.externalUrl ?? "#"}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {ref.provider}
-                      </a>
-                    </span>
-                  ))}
-              </p>
-            )}
+            </div>
           </div>
-        </div>
-      </section>
 
-      <section style={{ marginTop: 14 }}>
-        <MediaActions
-          mediaId={String(media.id)}
-          mediaType={media.type}
-          existingEntry={null}
-        />
+          <MediaActions
+            mediaId={String(media.id)}
+            mediaType={media.type}
+            existingEntry={null}
+          />
+
+          {isTmdbVisualMedia && castAndCrew.length > 0 ? (
+            <div style={{ marginTop: 18 }}>
+              <PersonScroller title="Cast & Crew" people={castAndCrew} />
+            </div>
+          ) : null}
+
+          {!isTmdbVisualMedia ? (
+            <div style={{ marginTop: 22 }}>
+              {media.genres.length > 0 && (
+                <p>
+                  <strong>Genres:</strong>{" "}
+                  {media.genres.map((item: any) => item.genre.name).join(", ")}
+                </p>
+              )}
+
+              {media.externalRefs.length > 0 && (
+                <p>
+                  <strong>External links:</strong>{" "}
+                  {media.externalRefs
+                    .filter((ref: any) => ref.externalUrl)
+                    .map((ref: any, index: number) => (
+                      <span key={ref.id}>
+                        {index > 0 && ", "}
+                        <a
+                          href={ref.externalUrl ?? "#"}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {ref.provider}
+                        </a>
+                      </span>
+                    ))}
+                </p>
+              )}
+            </div>
+          ) : null}
+        </div>
       </section>
 
       {isTmdbVisualMedia && (
@@ -669,9 +728,7 @@ export default async function MediaPage({ params }: Props) {
         </p>
       </section>
 
-      {isTmdbVisualMedia && (
-        <PersonScroller title="Cast & Crew" people={castAndCrew} />
-      )}
+
 
       <section style={{ marginTop: 30 }}>
         <h2>Reviews</h2>
