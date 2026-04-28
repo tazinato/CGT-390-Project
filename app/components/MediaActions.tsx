@@ -170,7 +170,7 @@ export default function MediaActions({
   }
 
   return (
-    <section style={{ marginTop: 0, width: "100%", maxWidth: "none" }}>
+    <section style={{ marginTop: 0, width: "100%", maxWidth: "none", display: "block" }}>
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}

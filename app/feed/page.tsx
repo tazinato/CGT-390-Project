@@ -420,7 +420,7 @@ function PopularMovieScroller({ events }: { events: FeedEvent[] }) {
           gap: 20,
           overflowX: "auto",
           width: "100%",
-          maxWidth: "100%",
+          maxWidth: "none",
           paddingBottom: 18,
           scrollSnapType: "x mandatory",
         }}
@@ -434,7 +434,7 @@ function PopularMovieScroller({ events }: { events: FeedEvent[] }) {
               key={`${event.id}-${media.externalId || media.id}`}
               href={mediaHref}
               style={{
-                width: 220,
+                width: 190,
                 flex: "0 0 auto",
                 color: "inherit",
                 textDecoration: "none",
@@ -448,8 +448,8 @@ function PopularMovieScroller({ events }: { events: FeedEvent[] }) {
                   loading="lazy"
                   decoding="async"
                   style={{
-                    width: 220,
-                    height: 330,
+                    width: 190,
+                    height: 285,
                     objectFit: "cover",
                     borderRadius: 8,
                     border: "1px solid var(--app-border)",
@@ -460,8 +460,8 @@ function PopularMovieScroller({ events }: { events: FeedEvent[] }) {
               ) : (
                 <div
                   style={{
-                    width: 220,
-                    height: 330,
+                    width: 190,
+                    height: 285,
                     border: "1px solid var(--app-border)",
                     borderRadius: 8,
                     background: "#eee",
@@ -508,7 +508,7 @@ function PopularTvScroller({ events }: { events: FeedEvent[] }) {
           gap: 20,
           overflowX: "auto",
           width: "100%",
-          maxWidth: "100%",
+          maxWidth: "none",
           paddingBottom: 18,
           scrollSnapType: "x mandatory",
         }}
@@ -522,7 +522,7 @@ function PopularTvScroller({ events }: { events: FeedEvent[] }) {
               key={`${event.id}-${media.externalId || media.id}`}
               href={mediaHref}
               style={{
-                width: 220,
+                width: 190,
                 flex: "0 0 auto",
                 color: "inherit",
                 textDecoration: "none",
@@ -536,8 +536,8 @@ function PopularTvScroller({ events }: { events: FeedEvent[] }) {
                   loading="lazy"
                   decoding="async"
                   style={{
-                    width: 220,
-                    height: 330,
+                    width: 190,
+                    height: 285,
                     objectFit: "cover",
                     borderRadius: 8,
                     border: "1px solid var(--app-border)",
@@ -548,8 +548,8 @@ function PopularTvScroller({ events }: { events: FeedEvent[] }) {
               ) : (
                 <div
                   style={{
-                    width: 220,
-                    height: 330,
+                    width: 190,
+                    height: 285,
                     border: "1px solid var(--app-border)",
                     borderRadius: 8,
                     background: "#eee",
@@ -596,7 +596,7 @@ function PopularAlbumScroller({ events }: { events: FeedEvent[] }) {
           gap: 20,
           overflowX: "auto",
           width: "100%",
-          maxWidth: "100%",
+          maxWidth: "none",
           paddingBottom: 18,
           scrollSnapType: "x mandatory",
         }}
@@ -610,7 +610,7 @@ function PopularAlbumScroller({ events }: { events: FeedEvent[] }) {
               key={`${event.id}-${media.externalId || media.id}`}
               href={mediaHref}
               style={{
-                width: 220,
+                width: 190,
                 flex: "0 0 auto",
                 color: "inherit",
                 textDecoration: "none",
@@ -624,8 +624,8 @@ function PopularAlbumScroller({ events }: { events: FeedEvent[] }) {
                   loading="lazy"
                   decoding="async"
                   style={{
-                    width: 220,
-                    height: 220,
+                    width: 190,
+                    height: 190,
                     objectFit: "cover",
                     borderRadius: 8,
                     border: "1px solid var(--app-border)",
@@ -636,8 +636,8 @@ function PopularAlbumScroller({ events }: { events: FeedEvent[] }) {
               ) : (
                 <div
                   style={{
-                    width: 220,
-                    height: 220,
+                    width: 190,
+                    height: 190,
                     border: "1px solid var(--app-border)",
                     borderRadius: 8,
                     background: "#eee",
@@ -698,7 +698,7 @@ function PopularBookScroller({ events }: { events: FeedEvent[] }) {
           gap: 20,
           overflowX: "auto",
           width: "100%",
-          maxWidth: "100%",
+          maxWidth: "none",
           paddingBottom: 18,
           scrollSnapType: "x mandatory",
         }}
@@ -712,7 +712,7 @@ function PopularBookScroller({ events }: { events: FeedEvent[] }) {
               key={`${event.id}-${media.externalId || media.id}`}
               href={mediaHref}
               style={{
-                width: 220,
+                width: 190,
                 flex: "0 0 auto",
                 color: "inherit",
                 textDecoration: "none",
@@ -726,8 +726,8 @@ function PopularBookScroller({ events }: { events: FeedEvent[] }) {
                   loading="lazy"
                   decoding="async"
                   style={{
-                    width: 220,
-                    height: 330,
+                    width: 190,
+                    height: 285,
                     objectFit: "cover",
                     borderRadius: 8,
                     border: "1px solid var(--app-border)",
@@ -738,8 +738,8 @@ function PopularBookScroller({ events }: { events: FeedEvent[] }) {
               ) : (
                 <div
                   style={{
-                    width: 220,
-                    height: 330,
+                    width: 190,
+                    height: 285,
                     border: "1px solid var(--app-border)",
                     borderRadius: 8,
                     background: "#eee",
@@ -800,7 +800,7 @@ function PopularGameScroller({ events }: { events: FeedEvent[] }) {
           gap: 20,
           overflowX: "auto",
           width: "100%",
-          maxWidth: "100%",
+          maxWidth: "none",
           paddingBottom: 18,
           scrollSnapType: "x mandatory",
         }}
@@ -814,7 +814,7 @@ function PopularGameScroller({ events }: { events: FeedEvent[] }) {
               key={`${event.id}-${media.externalId || media.id}`}
               href={mediaHref}
               style={{
-                width: 220,
+                width: 190,
                 flex: "0 0 auto",
                 color: "inherit",
                 textDecoration: "none",
@@ -828,8 +828,8 @@ function PopularGameScroller({ events }: { events: FeedEvent[] }) {
                   loading="lazy"
                   decoding="async"
                   style={{
-                    width: 220,
-                    height: 330,
+                    width: 190,
+                    height: 285,
                     objectFit: "cover",
                     borderRadius: 8,
                     border: "1px solid var(--app-border)",
@@ -840,8 +840,8 @@ function PopularGameScroller({ events }: { events: FeedEvent[] }) {
               ) : (
                 <div
                   style={{
-                    width: 220,
-                    height: 330,
+                    width: 190,
+                    height: 285,
                     border: "1px solid var(--app-border)",
                     borderRadius: 8,
                     background: "#eee",
@@ -1146,7 +1146,7 @@ export default function FeedPage() {
   }, []);
 
   return (
-    <main style={{ padding: "36px clamp(20px, 4vw, 64px)", width: "100%", maxWidth: "none", margin: 0, boxSizing: "border-box" }}>
+    <main style={{ padding: "36px 48px", width: "100vw", maxWidth: "none", marginLeft: "calc(50% - 50vw)", marginRight: "calc(50% - 50vw)", boxSizing: "border-box", overflowX: "hidden" }}>
       <h1>Feed</h1>
 
       {!authLoaded ? null : currentUser ? (

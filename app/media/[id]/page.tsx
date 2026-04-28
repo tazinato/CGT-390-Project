@@ -498,11 +498,11 @@ export default async function MediaPage({ params }: Props) {
   ];
 
   return (
-    <main style={{ padding: "34px clamp(18px, 3vw, 48px)", width: "100%", maxWidth: "none", margin: 0, boxSizing: "border-box" }}>
+    <main style={{ padding: "34px 48px", width: "100vw", maxWidth: "none", marginLeft: "calc(50% - 50vw)", marginRight: "calc(50% - 50vw)", boxSizing: "border-box", overflowX: "hidden" }}>
       <section
         style={{
           display: "grid",
-          gridTemplateColumns: "clamp(340px, 30vw, 430px) minmax(0, 1fr)",
+          gridTemplateColumns: "430px calc(100vw - 430px - 96px - 38px)",
           gap: 38,
           alignItems: "start",
           width: "100%",
@@ -549,7 +549,7 @@ export default async function MediaPage({ params }: Props) {
                 alt={media.title}
                 style={{
                   display: "block",
-                  width: "min(100%, 780px)",
+                  width: "min(100%, 720px)",
                   maxHeight: 155,
                   objectFit: "contain",
                   objectPosition: "left center",
@@ -629,13 +629,13 @@ export default async function MediaPage({ params }: Props) {
             {media.description ? (
               <p
                 style={{
-                  lineHeight: 1.38,
-                  fontSize: 18,
+                  lineHeight: 1.34,
+                  fontSize: 17,
                   margin: "14px 0 0",
                   width: "100%",
                   maxWidth: "none",
                   display: "-webkit-box",
-                  WebkitLineClamp: 4,
+                  WebkitLineClamp: 3,
                   WebkitBoxOrient: "vertical",
                   overflow: "hidden",
                 }}
@@ -665,7 +665,7 @@ export default async function MediaPage({ params }: Props) {
       {isTmdbVisualMedia && castAndCrew.length > 0 ? (
         <section
           style={{
-            marginTop: 30,
+            marginTop: 34,
             width: "100%",
             maxWidth: "none",
           }}
@@ -675,7 +675,7 @@ export default async function MediaPage({ params }: Props) {
       ) : null}
 
       {isTmdbVisualMedia && (
-        <section style={{ marginTop: 40 }}>
+        <section style={{ marginTop: 40, width: "100%", maxWidth: "none" }}>
           <h2>Trailer</h2>
 
           {tmdbExtras.trailer ? (
