@@ -200,7 +200,7 @@ export default function MediaActions({
             marginTop: 8,
             border: "1px solid var(--app-border, #ccc)",
             borderRadius: 16,
-            padding: 10,
+            padding: 14,
             background: "var(--app-surface-strong, rgba(255,255,255,0.9))",
             width: "100%",
             maxWidth: "none",
@@ -226,7 +226,7 @@ export default function MediaActions({
                 <StatusButton value="COMPLETED" label={copy.completed} />
               </div>
 
-              <div style={{ marginTop: 8 }}>
+              <div style={{ marginTop: 12 }}>
                 <label
                   htmlFor="review-text"
                   style={{
@@ -243,7 +243,7 @@ export default function MediaActions({
                   id="review-text"
                   value={review}
                   onChange={(event) => setReview(event.target.value)}
-                  rows={1}
+                  rows={4}
                   disabled={saving}
                   placeholder={copy.placeholder}
                   style={{
@@ -257,8 +257,8 @@ export default function MediaActions({
                     fontSize: 13,
                     lineHeight: 1.25,
                     resize: "vertical",
-                    minHeight: 44,
-                    maxHeight: 76,
+                    minHeight: 140,
+                    maxHeight: 220,
                     background: saving ? "#f6f6f6" : "rgba(255,255,255,0.76)",
                   }}
                 />
@@ -267,26 +267,34 @@ export default function MediaActions({
 
             <div
               style={{
-                minWidth: 170,
+                minWidth: 290,
                 textAlign: "right",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "flex-end",
-                gap: 6,
+                gap: 7,
               }}
             >
-              <strong style={{ fontSize: 12 }}>
-                Rating: {rating ? `${rating}/10` : "No rating"}
-              </strong>
-
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(5, 13px)",
-                  gap: 5,
-                  justifyContent: "end",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  gap: 8,
+                  whiteSpace: "nowrap",
                 }}
               >
+                <strong style={{ fontSize: 12 }}>
+                  Rating: {rating ? `${rating}/10` : "No rating"}
+                </strong>
+
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 5,
+                    alignItems: "center",
+                  }}
+                >
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
                   <button
                     key={value}
@@ -310,6 +318,7 @@ export default function MediaActions({
                     }}
                   />
                 ))}
+                </div>
               </div>
 
               <button
