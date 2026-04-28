@@ -170,7 +170,7 @@ export default function MediaActions({
   }
 
   return (
-    <section style={{ marginTop: 14 }}>
+    <section style={{ marginTop: 14, width: "100%", maxWidth: "none" }}>
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
@@ -197,6 +197,7 @@ export default function MediaActions({
             padding: 14,
             background: "var(--app-surface-strong, rgba(255,255,255,0.9))",
             width: "100%",
+            maxWidth: "none",
             boxSizing: "border-box",
           }}
         >
@@ -291,7 +292,7 @@ export default function MediaActions({
               id="review-text"
               value={review}
               onChange={(event) => setReview(event.target.value)}
-              rows={3}
+              rows={4}
               disabled={saving}
               placeholder={copy.placeholder}
               style={{
@@ -305,7 +306,7 @@ export default function MediaActions({
                 fontSize: 14,
                 lineHeight: 1.35,
                 resize: "vertical",
-                minHeight: 76,
+                minHeight: 110,
                 background: saving ? "#f6f6f6" : "rgba(255,255,255,0.76)",
               }}
             />

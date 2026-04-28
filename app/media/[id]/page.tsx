@@ -158,11 +158,16 @@ function MediaCoverDisplay({ media }: { media: any }) {
         src={media.coverUrl}
         alt={`${media.title} cover`}
         style={{
-          width: 280,
-          borderRadius: 14,
-          border: "1px solid var(--app-border)",
+          width: "100%",
+          maxWidth: 420,
+          aspectRatio: "2 / 3",
+          height: "auto",
+          objectFit: "cover",
+          borderRadius: 18,
+          border: "1px solid var(--app-border, #ccc)",
           background: "#eee",
-          boxShadow: "0 18px 45px rgba(0,0,0,0.12)",
+          boxShadow: "0 24px 70px rgba(0,0,0,0.14)",
+          display: "block",
         }}
       />
     );
@@ -378,6 +383,7 @@ function PersonScroller({
           display: "flex",
           gap: 12,
           overflowX: "auto",
+          width: "100%",
           paddingBottom: 12,
         }}
       >
@@ -495,16 +501,16 @@ export default async function MediaPage({ params }: Props) {
       <section
         style={{
           display: "grid",
-          gridTemplateColumns: "clamp(320px, 28vw, 430px) minmax(520px, 1fr)",
-          gap: 40,
-          alignItems: "stretch",
+          gridTemplateColumns: "clamp(300px, 28vw, 420px) minmax(0, 1fr)",
+          gap: 44,
+          alignItems: "start",
           width: "100%",
         }}
       >
         <div
           style={{
             display: "flex",
-            alignItems: "stretch",
+            alignItems: "start",
           }}
         >
           <MediaCoverDisplay media={media} />
@@ -513,6 +519,8 @@ export default async function MediaPage({ params }: Props) {
         <div
           style={{
             minWidth: 0,
+            width: "100%",
+            maxWidth: "none",
             display: "flex",
             flexDirection: "column",
             justifyContent: "flex-start",
@@ -615,7 +623,7 @@ export default async function MediaPage({ params }: Props) {
                   lineHeight: 1.48,
                   fontSize: 19,
                   margin: "14px 0 0",
-                  maxWidth: 880,
+                  maxWidth: 920,
                 }}
               >
                 {media.description}
@@ -630,7 +638,7 @@ export default async function MediaPage({ params }: Props) {
           />
 
           {isTmdbVisualMedia && castAndCrew.length > 0 ? (
-            <div style={{ marginTop: 18 }}>
+            <div style={{ marginTop: 18, width: "100%", maxWidth: "none" }}>
               <PersonScroller title="Cast & Crew" people={castAndCrew} />
             </div>
           ) : null}
@@ -677,7 +685,7 @@ export default async function MediaPage({ params }: Props) {
               style={{
                 aspectRatio: "16 / 9",
                 width: "100%",
-                maxWidth: 880,
+                maxWidth: 920,
                 borderRadius: 12,
                 overflow: "hidden",
                 border: "1px solid var(--app-border)",
