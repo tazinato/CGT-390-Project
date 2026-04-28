@@ -123,3 +123,8 @@ textarea,
 select {
   background-color: rgba(255,255,255,0.74);
 }
+
+/* Media detail: when the review panel is open, tighten the synopsis */
+.media-hero:has(.media-actions-panel) .media-description {
+  -webkit-line-clamp: 2 !important;
+}

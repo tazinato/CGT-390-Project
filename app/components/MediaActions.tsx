@@ -171,6 +171,7 @@ export default function MediaActions({
 
   return (
     <section
+      className="media-actions-root"
       style={{
         marginTop: open ? 2 : 28,
         width: "100%",
@@ -196,11 +197,12 @@ export default function MediaActions({
 
       {open ? (
         <div
+          className="media-actions-panel"
           style={{
             marginTop: 8,
             border: "1px solid var(--app-border, #ccc)",
             borderRadius: 16,
-            padding: 14,
+            padding: 12,
             background: "var(--app-surface-strong, rgba(255,255,255,0.9))",
             width: "100%",
             maxWidth: "none",
@@ -210,12 +212,18 @@ export default function MediaActions({
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "minmax(0, 1fr) auto",
-              gap: 16,
-              alignItems: "start",
+              gridTemplateColumns: "minmax(0, 1fr) 300px",
+              gap: 18,
+              alignItems: "stretch",
             }}
           >
-            <div>
+            <div
+              style={{
+                minWidth: 0,
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <StatusButton value="WISHLIST" label={copy.wishlist} />
 
@@ -226,7 +234,14 @@ export default function MediaActions({
                 <StatusButton value="COMPLETED" label={copy.completed} />
               </div>
 
-              <div style={{ marginTop: 12 }}>
+              <div
+                style={{
+                  marginTop: 10,
+                  display: "flex",
+                  flexDirection: "column",
+                  flex: 1,
+                }}
+              >
                 <label
                   htmlFor="review-text"
                   style={{
@@ -243,7 +258,7 @@ export default function MediaActions({
                   id="review-text"
                   value={review}
                   onChange={(event) => setReview(event.target.value)}
-                  rows={4}
+                  rows={3}
                   disabled={saving}
                   placeholder={copy.placeholder}
                   style={{
@@ -257,8 +272,9 @@ export default function MediaActions({
                     fontSize: 13,
                     lineHeight: 1.25,
                     resize: "vertical",
-                    minHeight: 140,
-                    maxHeight: 220,
+                    minHeight: 118,
+                    maxHeight: 150,
+                    flex: 1,
                     background: saving ? "#f6f6f6" : "rgba(255,255,255,0.76)",
                   }}
                 />
@@ -267,12 +283,14 @@ export default function MediaActions({
 
             <div
               style={{
-                minWidth: 290,
+                minWidth: 0,
                 textAlign: "right",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "flex-end",
-                gap: 7,
+                justifyContent: "space-between",
+                gap: 10,
+                minHeight: 170,
               }}
             >
               <div
@@ -339,34 +357,27 @@ export default function MediaActions({
                   Clear rating
                 </button>
               ) : null}
-            </div>
-          </div>
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              marginTop: 12,
-            }}
-          >
-            <button
-              type="button"
-              disabled={saving}
-              onClick={() => save()}
-              style={{
-                padding: "8px 14px",
-                borderRadius: 999,
-                border: "1px solid #222",
-                background: "black",
-                color: "white",
-                fontWeight: 900,
-                fontSize: 13,
-                cursor: saving ? "not-allowed" : "pointer",
-                opacity: saving ? 0.7 : 1,
-              }}
-            >
-              {saving ? "Saving..." : "Save"}
-            </button>
+              <button
+                className="media-actions-save"
+                type="button"
+                disabled={saving}
+                onClick={() => save()}
+                style={{
+                  padding: "8px 14px",
+                  borderRadius: 999,
+                  border: "1px solid #222",
+                  background: "black",
+                  color: "white",
+                  fontWeight: 900,
+                  fontSize: 13,
+                  cursor: saving ? "not-allowed" : "pointer",
+                  opacity: saving ? 0.7 : 1,
+                }}
+              >
+                {saving ? "Saving..." : "Save"}
+              </button>
+            </div>
           </div>
 
           {message ? (

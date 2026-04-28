@@ -500,6 +500,7 @@ export default async function MediaPage({ params }: Props) {
   return (
     <main style={{ padding: "36px clamp(24px, 4vw, 64px)", width: "100%", maxWidth: "none", margin: 0, boxSizing: "border-box" }}>
       <section
+        className="media-hero"
         style={{
           display: "grid",
           gridTemplateColumns: "minmax(360px, 430px) minmax(0, 1fr)",
@@ -628,6 +629,7 @@ export default async function MediaPage({ params }: Props) {
 
             {media.description ? (
               <p
+                className="media-description"
                 style={{
                   lineHeight: 1.34,
                   fontSize: 17,
