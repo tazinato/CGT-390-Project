@@ -154,7 +154,7 @@ export default function MediaActions({
         disabled={saving}
         onClick={() => save(value)}
         style={{
-          padding: "5px 10px",
+          padding: "4px 9px",
           borderRadius: 999,
           border: active ? "2px solid black" : "1px solid var(--app-border, #ccc)",
           background: active ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.74)",
@@ -175,14 +175,13 @@ export default function MediaActions({
         marginTop: open ? 2 : 28,
         width: "100%",
         maxWidth: "none",
-        display: "block",
       }}
     >
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
         style={{
-          padding: open ? "7px 13px" : "7px 14px",
+          padding: "7px 13px",
           borderRadius: 999,
           border: "1px solid #222",
           background: open ? "black" : "rgba(255,255,255,0.72)",
@@ -198,10 +197,10 @@ export default function MediaActions({
       {open ? (
         <div
           style={{
-            marginTop: 9,
+            marginTop: 8,
             border: "1px solid var(--app-border, #ccc)",
             borderRadius: 16,
-            padding: 12,
+            padding: 10,
             background: "var(--app-surface-strong, rgba(255,255,255,0.9))",
             width: "100%",
             maxWidth: "none",
@@ -212,42 +211,80 @@ export default function MediaActions({
             style={{
               display: "grid",
               gridTemplateColumns: "minmax(0, 1fr) auto",
-              gap: 12,
+              gap: 16,
               alignItems: "start",
             }}
           >
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <StatusButton value="WISHLIST" label={copy.wishlist} />
+            <div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <StatusButton value="WISHLIST" label={copy.wishlist} />
 
-              {copy.inProgress ? (
-                <StatusButton value="IN_PROGRESS" label={copy.inProgress} />
-              ) : null}
+                {copy.inProgress ? (
+                  <StatusButton value="IN_PROGRESS" label={copy.inProgress} />
+                ) : null}
 
-              <StatusButton value="COMPLETED" label={copy.completed} />
+                <StatusButton value="COMPLETED" label={copy.completed} />
+              </div>
+
+              <div style={{ marginTop: 8 }}>
+                <label
+                  htmlFor="review-text"
+                  style={{
+                    display: "block",
+                    fontWeight: 800,
+                    fontSize: 12,
+                    marginBottom: 5,
+                  }}
+                >
+                  {copy.review}
+                </label>
+
+                <textarea
+                  id="review-text"
+                  value={review}
+                  onChange={(event) => setReview(event.target.value)}
+                  rows={1}
+                  disabled={saving}
+                  placeholder={copy.placeholder}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    boxSizing: "border-box",
+                    padding: 8,
+                    borderRadius: 10,
+                    border: "1px solid var(--app-border, #ccc)",
+                    font: "inherit",
+                    fontSize: 13,
+                    lineHeight: 1.25,
+                    resize: "vertical",
+                    minHeight: 44,
+                    maxHeight: 76,
+                    background: saving ? "#f6f6f6" : "rgba(255,255,255,0.76)",
+                  }}
+                />
+              </div>
             </div>
 
             <div
               style={{
-                minWidth: 150,
+                minWidth: 170,
                 textAlign: "right",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-end",
+                gap: 6,
               }}
             >
-              <div
-                style={{
-                  fontWeight: 800,
-                  fontSize: 12,
-                  marginBottom: 6,
-                }}
-              >
-                {rating ? `${rating}/10` : "No rating"}
-              </div>
+              <strong style={{ fontSize: 12 }}>
+                Rating: {rating ? `${rating}/10` : "No rating"}
+              </strong>
 
               <div
                 style={{
-                  display: "flex",
+                  display: "grid",
+                  gridTemplateColumns: "repeat(5, 13px)",
                   gap: 5,
-                  justifyContent: "flex-end",
-                  flexWrap: "wrap",
+                  justifyContent: "end",
                 }}
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
@@ -274,96 +311,50 @@ export default function MediaActions({
                   />
                 ))}
               </div>
-            </div>
-          </div>
 
-          <div style={{ marginTop: 10 }}>
-            <label
-              htmlFor="review-text"
-              style={{
-                display: "block",
-                fontWeight: 800,
-                fontSize: 13,
-                marginBottom: 6,
-              }}
-            >
-              {copy.review}
-            </label>
-
-            <textarea
-              id="review-text"
-              value={review}
-              onChange={(event) => setReview(event.target.value)}
-              rows={2}
-              disabled={saving}
-              placeholder={copy.placeholder}
-              style={{
-                display: "block",
-                width: "100%",
-                boxSizing: "border-box",
-                padding: 9,
-                borderRadius: 12,
-                border: "1px solid var(--app-border, #ccc)",
-                font: "inherit",
-                fontSize: 14,
-                lineHeight: 1.3,
-                resize: "vertical",
-                minHeight: 58,
-                background: saving ? "#f6f6f6" : "rgba(255,255,255,0.76)",
-              }}
-            />
-          </div>
-
-          <div
-            style={{
-              marginTop: 9,
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              flexWrap: "wrap",
-            }}
-          >
-            <button
-              type="button"
-              disabled={saving}
-              onClick={() => save()}
-              style={{
-                padding: "7px 12px",
-                borderRadius: 999,
-                border: "1px solid #222",
-                background: "black",
-                color: "white",
-                fontWeight: 900,
-                fontSize: 13,
-                cursor: saving ? "not-allowed" : "pointer",
-                opacity: saving ? 0.7 : 1,
-              }}
-            >
-              {saving ? "Saving..." : "Save"}
-            </button>
-
-            {rating ? (
               <button
                 type="button"
                 disabled={saving}
-                onClick={() => setRating(0)}
+                onClick={() => save()}
                 style={{
-                  padding: "5px 9px",
+                  marginTop: 4,
+                  padding: "6px 11px",
                   borderRadius: 999,
-                  border: "1px solid var(--app-border, #ccc)",
-                  background: "rgba(255,255,255,0.72)",
-                  cursor: saving ? "not-allowed" : "pointer",
+                  border: "1px solid #222",
+                  background: "black",
+                  color: "white",
+                  fontWeight: 900,
                   fontSize: 12,
-                  fontWeight: 800,
+                  cursor: saving ? "not-allowed" : "pointer",
+                  opacity: saving ? 0.7 : 1,
                 }}
               >
-                Clear rating
+                {saving ? "Saving..." : "Save"}
               </button>
-            ) : null}
+
+              {rating ? (
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => setRating(0)}
+                  style={{
+                    padding: 0,
+                    border: 0,
+                    background: "transparent",
+                    cursor: saving ? "not-allowed" : "pointer",
+                    fontSize: 11,
+                    fontWeight: 800,
+                    textDecoration: "underline",
+                  }}
+                >
+                  Clear rating
+                </button>
+              ) : null}
+            </div>
           </div>
 
           {message ? (
-            <p style={{ color: "#555", marginBottom: 0, fontSize: 13 }}>
+            <p style={{ color: "#555", margin: "8px 0 0", fontSize: 12 }}>
               {message}
             </p>
           ) : null}
