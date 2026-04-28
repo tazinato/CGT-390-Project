@@ -492,15 +492,14 @@ export default async function MediaPage({ params }: Props) {
   ];
 
   return (
-    <main style={{ padding: "56px 40px", maxWidth: 1320, margin: "0 auto" }}>
+    <main style={{ padding: "48px 56px", width: "100%", boxSizing: "border-box" }}>
       <section
         style={{
           display: "grid",
-          gridTemplateColumns: "minmax(280px, 340px) minmax(0, 1fr)",
-          gap: 42,
+          gridTemplateColumns: "minmax(330px, 420px) minmax(0, 1fr)",
+          gap: 52,
           alignItems: "stretch",
-          maxWidth: 1180,
-          margin: "0 auto",
+          width: "100%",
         }}
       >
         <div
@@ -540,8 +539,8 @@ export default async function MediaPage({ params }: Props) {
                 alt={media.title}
                 style={{
                   display: "block",
-                  width: "min(100%, 560px)",
-                  maxHeight: 180,
+                  width: "min(100%, 620px)",
+                  maxHeight: 170,
                   objectFit: "contain",
                   objectPosition: "left center",
                 }}
@@ -564,8 +563,8 @@ export default async function MediaPage({ params }: Props) {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "minmax(0, 1fr) auto",
-              gap: 26,
+              gridTemplateColumns: "minmax(0, 1fr) minmax(190px, 260px)",
+              gap: 34,
               alignItems: "start",
             }}
           >
@@ -604,7 +603,7 @@ export default async function MediaPage({ params }: Props) {
                     lineHeight: 1.45,
                     fontSize: 20,
                     margin: "12px 0 0",
-                    maxWidth: 760,
+                    maxWidth: 900,
                   }}
                 >
                   {media.description}
