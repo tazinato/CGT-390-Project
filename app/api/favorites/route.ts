@@ -1,3 +1,4 @@
+import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -42,21 +43,24 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    return NextResponse.json(
+      { error: "Please log in to edit your favorites." },
+      { status: 401 }
+    );
+  }
+
   const body = await request.json();
 
-  const userId = String(body.userId ?? "");
+  const userId = currentUser.id;
   const mediaId = Number(body.mediaId);
   const slotNumber = Number(body.slotNumber);
 
-  console.log("Saving favorite:", {
-    userId,
-    mediaId,
-    slotNumber,
-  });
-
-  if (!userId || !mediaId || !slotNumber) {
+  if (!mediaId || !slotNumber) {
     return NextResponse.json(
-      { error: "userId, mediaId, and slotNumber are required." },
+      { error: "mediaId and slotNumber are required." },
       { status: 400 }
     );
   }
@@ -68,29 +72,22 @@ export async function POST(request: Request) {
     );
   }
 
-  const user = await prisma.userProfile.findUnique({
+  const entry = await prisma.userMediaEntry.findUnique({
     where: {
-      id: userId,
+      userId_mediaId: {
+        userId,
+        mediaId,
+      },
+    },
+    select: {
+      id: true,
     },
   });
 
-  if (!user) {
+  if (!entry) {
     return NextResponse.json(
-      { error: "User profile not found." },
-      { status: 404 }
-    );
-  }
-
-  const media = await prisma.mediaItem.findUnique({
-    where: {
-      id: mediaId,
-    },
-  });
-
-  if (!media) {
-    return NextResponse.json(
-      { error: "Media item not found." },
-      { status: 404 }
+      { error: "You can only add media you have already logged." },
+      { status: 400 }
     );
   }
 
@@ -132,24 +129,29 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const { searchParams } = new URL(request.url);
+  const currentUser = await getCurrentUser();
 
-  const userId = searchParams.get("userId");
+  if (!currentUser) {
+    return NextResponse.json(
+      { error: "Please log in to edit your favorites." },
+      { status: 401 }
+    );
+  }
+
+  const { searchParams } = new URL(request.url);
   const slotNumber = Number(searchParams.get("slotNumber"));
 
-  if (!userId || !isValidSlot(slotNumber)) {
+  if (!isValidSlot(slotNumber)) {
     return NextResponse.json(
-      { error: "Valid userId and slotNumber are required." },
+      { error: "Valid slotNumber is required." },
       { status: 400 }
     );
   }
 
-  await prisma.userProfileFavorite.delete({
+  await prisma.userProfileFavorite.deleteMany({
     where: {
-      userId_slotNumber: {
-        userId,
-        slotNumber,
-      },
+      userId: currentUser.id,
+      slotNumber,
     },
   });
 

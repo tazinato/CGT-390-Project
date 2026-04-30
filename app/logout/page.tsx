@@ -1,107 +1,68 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect } from "react";
 
-async function safeJson(res: Response) {
-  const text = await res.text();
-
-  if (!text) return null;
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    return {
-      error: "Response was not valid JSON.",
-      raw: text,
-    };
-  }
-}
+const AUTH_CACHE_KEY = "media_app_current_user_cache";
+const AUTH_CHANGED_EVENT = "media-app-auth-changed";
 
 export default function LogoutPage() {
-  const router = useRouter();
-  const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  async function logout() {
-    setLoading(true);
-    setMessage("");
-
-    try {
-      const res = await fetch("/api/auth/logout", {
-        method: "POST",
-      });
-
-      const data = await safeJson(res);
-
-      if (!res.ok) {
-        setMessage(
-          JSON.stringify(
-            {
-              status: res.status,
-              error: "Logout failed.",
-              response: data,
-            },
-            null,
-            2
-          )
-        );
-        return;
+  useEffect(() => {
+    async function logout() {
+      try {
+        window.sessionStorage.removeItem(AUTH_CACHE_KEY);
+        window.localStorage.removeItem(AUTH_CACHE_KEY);
+        window.dispatchEvent(new Event(AUTH_CHANGED_EVENT));
+      } catch {
+        // Ignore storage errors.
       }
 
-      router.push("/login");
-    } catch (error) {
-      setMessage(
-        JSON.stringify(
-          {
-            error: "Logout request crashed.",
-            details: String(error),
-          },
-          null,
-          2
-        )
-      );
-    } finally {
-      setLoading(false);
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => {
+        controller.abort();
+      }, 2500);
+
+      try {
+        await fetch("/api/auth/logout", {
+          method: "POST",
+          cache: "no-store",
+          signal: controller.signal,
+        });
+      } catch (error) {
+        console.error("Logout request failed or timed out:", error);
+      } finally {
+        window.clearTimeout(timeoutId);
+        window.location.replace("/login");
+      }
     }
-  }
+
+    logout();
+  }, []);
 
   return (
-    <main style={{ padding: 40, maxWidth: 520, margin: "0 auto", boxSizing: "border-box" }}>
-      <h1>Log Out</h1>
-
-      <p style={{ color: "#555" }}>
-        Log out of the current account so you can test another user.
-      </p>
-
-      <button
-        type="button"
-        onClick={logout}
-        disabled={loading}
-        style={{ padding: "8px 12px" }}
+    <main
+      style={{
+        minHeight: "70vh",
+        display: "grid",
+        placeItems: "center",
+        padding: 24,
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 420,
+          border: "1px solid var(--app-border, #ddd)",
+          borderRadius: 18,
+          padding: 24,
+          background: "var(--app-surface-strong, rgba(255,255,255,0.9))",
+          textAlign: "center",
+        }}
       >
-        {loading ? "Logging out..." : "Log Out"}
-      </button>
-
-      <p style={{ marginTop: 20 }}>
-        <a href="/login">Back to Login</a>
-        {" | "}
-        <a href="/signup">Create Test User</a>
-      </p>
-
-      {message && (
-        <pre
-          style={{
-            marginTop: 20,
-            whiteSpace: "pre-wrap",
-            background: "#f6f6f6",
-            padding: 12,
-            borderRadius: 8,
-          }}
-        >
-          {message}
-        </pre>
-      )}
+        <h1 style={{ margin: 0, fontSize: 24 }}>Logging out...</h1>
+        <p style={{ marginTop: 10, marginBottom: 0, color: "#666" }}>
+          Clearing your session.
+        </p>
+      </div>
     </main>
   );
 }

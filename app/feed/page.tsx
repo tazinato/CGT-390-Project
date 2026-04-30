@@ -411,8 +411,20 @@ function PopularMovieScroller({ events }: { events: FeedEvent[] }) {
   }
 
   return (
-    <section style={{ width: "100%", maxWidth: "none" }}>
-      <h2 style={{ marginTop: 0 }}>Popular This Week</h2>
+    <section
+      style={{
+        width: "100%",
+        maxWidth: "none",
+        marginBottom: 28,
+        padding: 22,
+        border: "1px solid var(--app-border, rgba(0,0,0,0.12))",
+        borderRadius: 18,
+        background: "var(--app-surface-strong, #f6dddd)",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
+        boxSizing: "border-box",
+      }}
+    >
+      <h2 style={{ margin: "0 0 18px", fontSize: 18, fontWeight: 900 }}>Popular This Week</h2>
 
       <div
         style={{
@@ -499,8 +511,19 @@ function PopularTvScroller({ events }: { events: FeedEvent[] }) {
   }
 
   return (
-    <section style={{ marginTop: 34 }}>
-      <h2 style={{ marginTop: 0 }}>Popular TV This Week</h2>
+    <section
+      style={{
+        marginTop: 28,
+        marginBottom: 28,
+        padding: 22,
+        border: "1px solid var(--app-border, rgba(0,0,0,0.12))",
+        borderRadius: 18,
+        background: "var(--app-surface-strong, #f6dddd)",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
+        boxSizing: "border-box",
+      }}
+    >
+      <h2 style={{ margin: "0 0 18px", fontSize: 18, fontWeight: 900 }}>Popular TV This Week</h2>
 
       <div
         style={{
@@ -587,8 +610,19 @@ function PopularAlbumScroller({ events }: { events: FeedEvent[] }) {
   }
 
   return (
-    <section style={{ marginTop: 34 }}>
-      <h2 style={{ marginTop: 0 }}>Popular New Albums</h2>
+    <section
+      style={{
+        marginTop: 28,
+        marginBottom: 28,
+        padding: 22,
+        border: "1px solid var(--app-border, rgba(0,0,0,0.12))",
+        borderRadius: 18,
+        background: "var(--app-surface-strong, #f6dddd)",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
+        boxSizing: "border-box",
+      }}
+    >
+      <h2 style={{ margin: "0 0 18px", fontSize: 18, fontWeight: 900 }}>Popular New Albums</h2>
 
       <div
         style={{
@@ -689,8 +723,19 @@ function PopularBookScroller({ events }: { events: FeedEvent[] }) {
   }
 
   return (
-    <section style={{ marginTop: 34 }}>
-      <h2 style={{ marginTop: 0 }}>Popular Books</h2>
+    <section
+      style={{
+        marginTop: 28,
+        marginBottom: 28,
+        padding: 22,
+        border: "1px solid var(--app-border, rgba(0,0,0,0.12))",
+        borderRadius: 18,
+        background: "var(--app-surface-strong, #f6dddd)",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
+        boxSizing: "border-box",
+      }}
+    >
+      <h2 style={{ margin: "0 0 18px", fontSize: 18, fontWeight: 900 }}>Popular Books</h2>
 
       <div
         style={{
@@ -791,8 +836,19 @@ function PopularGameScroller({ events }: { events: FeedEvent[] }) {
   }
 
   return (
-    <section style={{ marginTop: 34 }}>
-      <h2 style={{ marginTop: 0 }}>Popular Games</h2>
+    <section
+      style={{
+        marginTop: 28,
+        marginBottom: 28,
+        padding: 22,
+        border: "1px solid var(--app-border, rgba(0,0,0,0.12))",
+        borderRadius: 18,
+        background: "var(--app-surface-strong, #f6dddd)",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
+        boxSizing: "border-box",
+      }}
+    >
+      <h2 style={{ margin: "0 0 18px", fontSize: 18, fontWeight: 900 }}>Popular Games</h2>
 
       <div
         style={{

@@ -1,3 +1,4 @@
+import { getOrSetExternalApiCache } from "@/lib/externalApiCache";
 import { NextResponse } from "next/server";
 
 type SpotifyImage = {
@@ -18,6 +19,9 @@ type SpotifyAlbum = {
     name?: string;
   }>;
 };
+
+const CACHE_KEY = "feed:popular-new-albums";
+const TWELVE_HOURS = 1000 * 60 * 60 * 12;
 
 async function getSpotifyAccessToken() {
   const clientId = process.env.SPOTIFY_CLIENT_ID;
@@ -76,20 +80,14 @@ async function searchSpotifyAlbums(token: string, query: string) {
       Authorization: `Bearer ${token}`,
       Accept: "application/json",
     },
-    next: {
-      revalidate: 3600,
-    },
+    cache: "no-store",
   });
 
   if (!response.ok) {
     const body = await response.text().catch(() => "");
-    console.error(
-      "Spotify album search failed:",
-      response.status,
-      query,
-      body
+    throw new Error(
+      `Spotify album search failed: ${response.status} ${query} ${body}`
     );
-    return [];
   }
 
   const data = await response.json();
@@ -99,84 +97,92 @@ async function searchSpotifyAlbums(token: string, query: string) {
     : [];
 }
 
+async function fetchPopularNewAlbums() {
+  const token = await getSpotifyAccessToken();
+  const currentYear = new Date().getFullYear();
+
+  const queries = [
+    `year:${currentYear}`,
+    `year:${currentYear - 1}`,
+    `year:${currentYear - 2}`,
+  ];
+
+  const pages: SpotifyAlbum[][] = [];
+
+  for (const query of queries) {
+    const albums = await searchSpotifyAlbums(token, query);
+    pages.push(albums);
+  }
+
+  const albums = pages.flat();
+  const seen = new Set<string>();
+
+  return albums
+    .filter((album) => album.id && album.name)
+    .filter((album) => album.album_type === "album")
+    .filter((album) => {
+      if (seen.has(album.id)) return false;
+
+      seen.add(album.id);
+      return true;
+    })
+    .slice(0, 30)
+    .map((album, index) => {
+      const artists =
+        album.artists
+          ?.map((artist) => artist.name)
+          .filter((name): name is string => Boolean(name)) ?? [];
+
+      return {
+        id: index + 1,
+        eventType: "POPULAR",
+        bodyText:
+          artists.length > 0
+            ? `Album by ${artists.join(", ")}.`
+            : "Album on Spotify.",
+        ratingValue: null,
+        createdAt: new Date().toISOString(),
+        entry: {
+          id: index + 1,
+          status: "POPULAR",
+          reviewText: null,
+          user: {
+            id: "spotify",
+            username: "spotify",
+            displayName: "Spotify",
+            avatarUrl: null,
+          },
+          media: {
+            id: index + 1,
+            provider: "SPOTIFY",
+            externalId: album.id,
+            type: "ALBUM",
+            title: album.name,
+            releaseDate: album.release_date || null,
+            coverUrl: getBestSpotifyImage(album.images),
+            movieDetails: null,
+            showDetails: null,
+            bookDetails: null,
+            albumDetails: {
+              totalTracks: album.total_tracks ?? null,
+              durationSeconds: null,
+              primaryArtistName:
+                artists.length > 0 ? artists.join(", ") : null,
+            },
+            gameDetails: null,
+          },
+        },
+      };
+    });
+}
+
 export async function GET() {
   try {
-    const token = await getSpotifyAccessToken();
-    const currentYear = new Date().getFullYear();
-
-    const queries = [
-      `year:${currentYear}`,
-      `year:${currentYear - 1}`,
-      `year:${currentYear - 2}`,
-    ];
-
-    const pages: SpotifyAlbum[][] = [];
-
-    for (const query of queries) {
-      const albums = await searchSpotifyAlbums(token, query);
-      pages.push(albums);
-    }
-
-    const albums = pages.flat();
-    const seen = new Set<string>();
-
-    const popularAlbums = albums
-      .filter((album) => album.id && album.name)
-      .filter((album) => album.album_type === "album")
-      .filter((album) => {
-        if (seen.has(album.id)) return false;
-
-        seen.add(album.id);
-        return true;
-      })
-      .slice(0, 30)
-      .map((album, index) => {
-        const artists =
-          album.artists
-            ?.map((artist) => artist.name)
-            .filter((name): name is string => Boolean(name)) ?? [];
-
-        return {
-          id: index + 1,
-          eventType: "POPULAR",
-          bodyText:
-            artists.length > 0
-              ? `Album by ${artists.join(", ")}.`
-              : "Album on Spotify.",
-          ratingValue: null,
-          createdAt: new Date().toISOString(),
-          entry: {
-            id: index + 1,
-            status: "POPULAR",
-            reviewText: null,
-            user: {
-              id: "spotify",
-              username: "spotify",
-              displayName: "Spotify",
-              avatarUrl: null,
-            },
-            media: {
-              id: index + 1,
-              provider: "SPOTIFY",
-              externalId: album.id,
-              type: "ALBUM",
-              title: album.name,
-              releaseDate: album.release_date || null,
-              coverUrl: getBestSpotifyImage(album.images),
-              movieDetails: null,
-              showDetails: null,
-              bookDetails: null,
-              albumDetails: {
-                totalTracks: album.total_tracks ?? null,
-                durationSeconds: null,
-                primaryArtistName:
-                  artists.length > 0 ? artists.join(", ") : null,
-              },
-              gameDetails: null,
-            },
-          },
-        };
-      });
+    const popularAlbums = await getOrSetExternalApiCache({
+      key: CACHE_KEY,
+      ttlMs: TWELVE_HOURS,
+      fetchFresh: fetchPopularNewAlbums,
+    });
 
     return NextResponse.json(popularAlbums);
   } catch (error) {

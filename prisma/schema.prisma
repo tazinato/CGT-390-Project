@@ -6,7 +6,6 @@ datasource db {
   provider = "postgresql"
 }
 
-
 enum MediaType {
   MOVIE
   SHOW
@@ -82,11 +81,11 @@ model UserProfile {
   avatarBlobId Int?
   bannerBlobId Int?
 
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  entries     UserMediaEntry[]
-  favorites   UserProfileFavorite[]
+  entries   UserMediaEntry[]
+  favorites UserProfileFavorite[]
 
   authCredential AuthCredential?
   sessions       AuthSession[]
@@ -95,24 +94,24 @@ model UserProfile {
   avatarBlob    BlobAsset?  @relation("ProfileAvatar", fields: [avatarBlobId], references: [id])
   bannerBlob    BlobAsset?  @relation("ProfileBanner", fields: [bannerBlobId], references: [id])
 
-  friendshipsAsA      Friendship[] @relation("FriendshipUserA")
-  friendshipsAsB      Friendship[] @relation("FriendshipUserB")
-  friendshipActions   Friendship[] @relation("FriendshipActionUser")
+  friendshipsAsA    Friendship[] @relation("FriendshipUserA")
+  friendshipsAsB    Friendship[] @relation("FriendshipUserB")
+  friendshipActions Friendship[] @relation("FriendshipActionUser")
 
   @@index([createdAt])
   @@index([updatedAt])
 }
 
 model AuthCredential {
-  id           Int      @id @default(autoincrement())
-  userId       String   @unique
-  email        String?  @unique
+  id           Int     @id @default(autoincrement())
+  userId       String  @unique
+  email        String? @unique
   passwordHash String
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user         UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model AuthSession {
@@ -122,7 +121,7 @@ model AuthSession {
 
   createdAt DateTime @default(now())
 
-  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([expiresAt])
@@ -157,25 +156,25 @@ model MediaItem {
   description   String?
   releaseDate   DateTime?
 
-  coverUrl      String?
-  backdropUrl   String?
-  languageCode  String?
+  coverUrl     String?
+  backdropUrl  String?
+  languageCode String?
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  movieDetails  MovieDetails?
-  showDetails   ShowDetails?
-  bookDetails   BookDetails?
-  albumDetails  AlbumDetails?
-  gameDetails   GameDetails?
+  movieDetails MovieDetails?
+  showDetails  ShowDetails?
+  bookDetails  BookDetails?
+  albumDetails AlbumDetails?
+  gameDetails  GameDetails?
 
-  entries       UserMediaEntry[]
-  favorites     UserProfileFavorite[]
-  logEvents     UserMediaLogEvent[]
-  externalRefs  MediaExternalRef[]
-  genres        MediaGenre[]
-  credits       MediaCredit[]
+  entries      UserMediaEntry[]
+  favorites    UserProfileFavorite[]
+  logEvents    UserMediaLogEvent[]
+  externalRefs MediaExternalRef[]
+  genres       MediaGenre[]
+  credits      MediaCredit[]
 
   @@index([type])
   @@index([title])
@@ -185,14 +184,14 @@ model MediaItem {
 }
 
 model MovieDetails {
-  mediaId        Int @id
+  mediaId        Int  @id
   runtimeMinutes Int?
 
   media MediaItem @relation(fields: [mediaId], references: [id], onDelete: Cascade)
 }
 
 model ShowDetails {
-  mediaId           Int @id
+  mediaId           Int     @id
   seasonsCount      Int?
   episodesCount     Int?
   avgRuntimeMinutes Int?
@@ -202,7 +201,7 @@ model ShowDetails {
 }
 
 model BookDetails {
-  mediaId                  Int @id
+  mediaId                  Int     @id
   pageCount                Int?
   estimatedReadTimeMinutes Int?
   isbn13                   String? @unique
@@ -211,7 +210,7 @@ model BookDetails {
 }
 
 model AlbumDetails {
-  mediaId           Int @id
+  mediaId           Int     @id
   totalTracks       Int?
   durationSeconds   Int?
   primaryArtistName String?
@@ -230,28 +229,28 @@ model GameDetails {
 }
 
 model UserMediaEntry {
-  id               Int         @id @default(autoincrement())
-  userId           String
-  mediaId          Int
+  id      Int    @id @default(autoincrement())
+  userId  String
+  mediaId Int
 
   status           EntryStatus @default(WISHLIST)
   ratingValue      Int?
   reviewText       String?
   containsSpoilers Boolean     @default(false)
 
-  startedOn        DateTime?
-  completedOn      DateTime?
-  completionCount  Int         @default(0)
+  startedOn       DateTime?
+  completedOn     DateTime?
+  completionCount Int       @default(0)
 
-  visibility       Visibility  @default(PUBLIC)
-  lastActivityAt   DateTime    @default(now())
+  visibility     Visibility @default(PUBLIC)
+  lastActivityAt DateTime   @default(now())
 
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user             UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
-  media            MediaItem   @relation(fields: [mediaId], references: [id], onDelete: Cascade)
-  logEvents        UserMediaLogEvent[]
+  user      UserProfile         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  media     MediaItem           @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  logEvents UserMediaLogEvent[]
 
   @@unique([userId, mediaId])
   @@index([userId])
@@ -266,10 +265,10 @@ model UserMediaEntry {
 }
 
 model UserMediaLogEvent {
-  id            Int          @id @default(autoincrement())
-  entryId       Int?
-  mediaId       Int?
-  userId        String?
+  id      Int     @id @default(autoincrement())
+  entryId Int?
+  mediaId Int?
+  userId  String?
 
   eventType     LogEventType
   bodyText      String?
@@ -278,10 +277,10 @@ model UserMediaLogEvent {
   progressUnit  String?
   details       Json?
 
-  createdAt     DateTime     @default(now())
+  createdAt DateTime @default(now())
 
-  entry         UserMediaEntry? @relation(fields: [entryId], references: [id], onDelete: Cascade)
-  media         MediaItem?      @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  entry UserMediaEntry? @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  media MediaItem?      @relation(fields: [mediaId], references: [id], onDelete: Cascade)
 
   @@index([entryId])
   @@index([mediaId])
@@ -298,10 +297,10 @@ model UserProfileFavorite {
   slotNumber Int
   mediaId    Int
 
-  updatedAt  DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 
-  user       UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
-  media      MediaItem   @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  user  UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  media MediaItem   @relation(fields: [mediaId], references: [id], onDelete: Cascade)
 
   @@id([userId, slotNumber])
   @@unique([userId, mediaId])
@@ -310,20 +309,20 @@ model UserProfileFavorite {
 }
 
 model Friendship {
-  id           Int              @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   userAId      String
   userBId      String
   actionUserId String
 
-  status       FriendshipStatus @default(PENDING)
+  status FriendshipStatus @default(PENDING)
 
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  userA        UserProfile      @relation("FriendshipUserA", fields: [userAId], references: [id], onDelete: Cascade)
-  userB        UserProfile      @relation("FriendshipUserB", fields: [userBId], references: [id], onDelete: Cascade)
-  actionUser   UserProfile      @relation("FriendshipActionUser", fields: [actionUserId], references: [id], onDelete: Cascade)
+  userA      UserProfile @relation("FriendshipUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB      UserProfile @relation("FriendshipUserB", fields: [userBId], references: [id], onDelete: Cascade)
+  actionUser UserProfile @relation("FriendshipActionUser", fields: [actionUserId], references: [id], onDelete: Cascade)
 
   @@unique([userAId, userBId])
   @@index([userAId])
@@ -338,8 +337,8 @@ model Friendship {
 }
 
 model Genre {
-  id    Int          @id @default(autoincrement())
-  name  String       @unique
+  id   Int    @id @default(autoincrement())
+  name String @unique
 
   media MediaGenre[]
 }
@@ -348,20 +347,20 @@ model MediaGenre {
   mediaId Int
   genreId Int
 
-  media   MediaItem @relation(fields: [mediaId], references: [id], onDelete: Cascade)
-  genre   Genre     @relation(fields: [genreId], references: [id], onDelete: Cascade)
+  media MediaItem @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  genre Genre     @relation(fields: [genreId], references: [id], onDelete: Cascade)
 
   @@id([mediaId, genreId])
   @@index([genreId])
 }
 
 model Person {
-  id        Int      @id @default(autoincrement())
-  fullName  String
-  imageUrl  String?
-  bio       String?
+  id       Int     @id @default(autoincrement())
+  fullName String
+  imageUrl String?
+  bio      String?
 
-  credits   MediaCredit[]
+  credits MediaCredit[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -371,15 +370,15 @@ model Person {
 }
 
 model MediaCredit {
-  id            Int       @id @default(autoincrement())
+  id            Int     @id @default(autoincrement())
   mediaId       Int
   personId      Int
   creditRole    String
   characterName String?
   billingOrder  Int?
 
-  media         MediaItem @relation(fields: [mediaId], references: [id], onDelete: Cascade)
-  person        Person    @relation(fields: [personId], references: [id], onDelete: Cascade)
+  media  MediaItem @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  person Person    @relation(fields: [personId], references: [id], onDelete: Cascade)
 
   @@index([mediaId])
   @@index([personId])
@@ -397,9 +396,9 @@ model MediaExternalRef {
   rawPayload   Json?
   lastSyncedAt DateTime?
 
-  createdAt    DateTime         @default(now())
+  createdAt DateTime @default(now())
 
-  media        MediaItem        @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  media MediaItem @relation(fields: [mediaId], references: [id], onDelete: Cascade)
 
   @@unique([provider, externalId])
   @@index([mediaId])
@@ -407,4 +406,13 @@ model MediaExternalRef {
   @@index([externalId])
   @@index([provider, externalId])
   @@index([lastSyncedAt])
+}
+
+model ExternalApiCache {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

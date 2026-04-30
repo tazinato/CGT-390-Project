@@ -47,6 +47,27 @@ function isEntryStatus(value: unknown): value is EntryStatus {
   );
 }
 
+function parseRating(value: unknown) {
+  if (value === null || value === "" || value === undefined) {
+    return null;
+  }
+
+  return Number(value);
+}
+
+function parseReview(value: unknown) {
+  return typeof value === "string" && value.trim().length > 0
+    ? value.trim()
+    : null;
+}
+
+function validateRating(ratingValue: number | null) {
+  return (
+    ratingValue === null ||
+    (Number.isInteger(ratingValue) && ratingValue >= 1 && ratingValue <= 10)
+  );
+}
+
 export async function POST(request: Request) {
   try {
     const currentUser = await getCurrentUser();
@@ -63,14 +84,8 @@ export async function POST(request: Request) {
     const userId = currentUser.id;
     const mediaId = Number(body.mediaId);
     const status = body.status as EntryStatus;
-    const ratingValue =
-      body.ratingValue === null || body.ratingValue === ""
-        ? null
-        : Number(body.ratingValue);
-    const reviewText =
-      typeof body.reviewText === "string" && body.reviewText.trim().length > 0
-        ? body.reviewText.trim()
-        : null;
+    const ratingValue = parseRating(body.ratingValue);
+    const reviewText = parseReview(body.reviewText);
 
     if (!Number.isInteger(mediaId) || mediaId <= 0) {
       return NextResponse.json(
@@ -86,10 +101,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (
-      ratingValue !== null &&
-      (!Number.isInteger(ratingValue) || ratingValue < 1 || ratingValue > 10)
-    ) {
+    if (!validateRating(ratingValue)) {
       return NextResponse.json(
         { error: "Rating must be a whole number from 1 to 10." },
         { status: 400 }
@@ -98,9 +110,7 @@ export async function POST(request: Request) {
 
     const media = await prisma.mediaItem.findUnique({
       where: { id: mediaId },
-      select: {
-        id: true,
-      },
+      select: { id: true },
     });
 
     if (!media) {
@@ -184,6 +194,199 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error: "Internal entry error.",
+        message: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const currentUser = await getCurrentUser();
+
+    if (!currentUser) {
+      return NextResponse.json(
+        { error: "Please log in to edit entries." },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+
+    const entryId = Number(body.entryId);
+    const status = body.status as EntryStatus;
+    const ratingValue = parseRating(body.ratingValue);
+    const reviewText = parseReview(body.reviewText);
+
+    if (!Number.isInteger(entryId) || entryId <= 0) {
+      return NextResponse.json(
+        { error: "entryId is required." },
+        { status: 400 }
+      );
+    }
+
+    if (!isEntryStatus(status)) {
+      return NextResponse.json(
+        { error: "Valid status is required." },
+        { status: 400 }
+      );
+    }
+
+    if (!validateRating(ratingValue)) {
+      return NextResponse.json(
+        { error: "Rating must be a whole number from 1 to 10." },
+        { status: 400 }
+      );
+    }
+
+    const existingEntry = await prisma.userMediaEntry.findFirst({
+      where: {
+        id: entryId,
+        userId: currentUser.id,
+      },
+      select: {
+        id: true,
+        mediaId: true,
+      },
+    });
+
+    if (!existingEntry) {
+      return NextResponse.json(
+        { error: "Entry not found." },
+        { status: 404 }
+      );
+    }
+
+    const eventType = getEventType({
+      previousEntryExists: true,
+      status,
+      ratingValue,
+      reviewText,
+    });
+
+    const result = await prisma.$transaction(async (tx) => {
+      const entry = await tx.userMediaEntry.update({
+        where: {
+          id: existingEntry.id,
+        },
+        data: {
+          status,
+          ratingValue,
+          reviewText,
+          lastActivityAt: new Date(),
+        },
+        include: {
+          media: true,
+          user: true,
+        },
+      });
+
+      const logEvent = await tx.userMediaLogEvent.create({
+        data: {
+          entryId: entry.id,
+          mediaId: entry.mediaId,
+          userId: currentUser.id,
+          eventType,
+          bodyText: reviewText,
+          ratingValue,
+          details: {
+            status,
+            editedFromProfile: true,
+          },
+        },
+      });
+
+      return {
+        entry,
+        logEvent,
+      };
+    });
+
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("Entry edit route error:", error);
+
+    return NextResponse.json(
+      {
+        error: "Internal entry edit error.",
+        message: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const currentUser = await getCurrentUser();
+
+    if (!currentUser) {
+      return NextResponse.json(
+        { error: "Please log in to delete entries." },
+        { status: 401 }
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const entryId = Number(searchParams.get("entryId"));
+
+    if (!Number.isInteger(entryId) || entryId <= 0) {
+      return NextResponse.json(
+        { error: "Valid entryId is required." },
+        { status: 400 }
+      );
+    }
+
+    const existingEntry = await prisma.userMediaEntry.findFirst({
+      where: {
+        id: entryId,
+        userId: currentUser.id,
+      },
+      select: {
+        id: true,
+        mediaId: true,
+      },
+    });
+
+    if (!existingEntry) {
+      return NextResponse.json(
+        { error: "Entry not found." },
+        { status: 404 }
+      );
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.userMediaLogEvent.deleteMany({
+        where: {
+          entryId: existingEntry.id,
+          userId: currentUser.id,
+        },
+      });
+
+      await tx.userProfileFavorite.deleteMany({
+        where: {
+          userId: currentUser.id,
+          mediaId: existingEntry.mediaId,
+        },
+      });
+
+      await tx.userMediaEntry.delete({
+        where: {
+          id: existingEntry.id,
+        },
+      });
+    });
+
+    return NextResponse.json({
+      deleted: true,
+    });
+  } catch (error) {
+    console.error("Entry delete route error:", error);
+
+    return NextResponse.json(
+      {
+        error: "Internal entry delete error.",
         message: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }

@@ -2,6 +2,9 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { FriendshipStatus } from "@prisma/client";
 import ProfileFriendActions from "./ProfileFriendActions";
+import ProfileTopFavorites from "./ProfileTopFavorites";
+import ProfileEntriesList from "./ProfileEntriesList";
+import ProfileMediaMix from "./ProfileMediaMix";
 
 type Media = {
   id: number;
@@ -499,6 +502,7 @@ function EmptyFavoriteSlot({ slotNumber }: { slotNumber: number }) {
   );
 }
 
+
 function EntryCard({ entry }: { entry: ProfileEntry }) {
   return (
     <article
@@ -569,17 +573,6 @@ export default async function ProfilePage({
 
   const socialInfo = await getSocialInfo(profile.id, currentUser?.id ?? null);
 
-  const favoriteSlots = [1, 2, 3, 4].map((slotNumber) => {
-    const favorite = profile.favorites.find(
-      (item) => item.slotNumber === slotNumber
-    );
-
-    return {
-      slotNumber,
-      favorite,
-    };
-  });
-
   return (
     <main style={{ padding: "36px clamp(20px, 4vw, 64px)", width: "100%", maxWidth: "none", margin: 0, boxSizing: "border-box" }}>
       <section style={{ marginBottom: 32 }}>
@@ -639,38 +632,35 @@ export default async function ProfilePage({
       </section>
 
       <section style={{ marginBottom: 36 }}>
-        <h2>Top 4 Favorites</h2>
-
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(4, 160px)",
-            gap: 16,
+            gridTemplateColumns: "auto 430px",
+            gap: 32,
             alignItems: "start",
+            width: "100%",
           }}
         >
-          {favoriteSlots.map(({ slotNumber, favorite }) =>
-            favorite ? (
-              <FavoriteSlot key={slotNumber} favorite={favorite} />
-            ) : (
-              <EmptyFavoriteSlot key={slotNumber} slotNumber={slotNumber} />
-            )
-          )}
+          <div>
+            <h2>Top 4 Favorites</h2>
+
+            <ProfileTopFavorites
+              favorites={profile.favorites}
+              isOwnProfile={socialInfo.status === "SELF"}
+            />
+          </div>
+
+          <ProfileMediaMix entries={profile.entries} />
         </div>
       </section>
 
       <section>
         <h2>Entries</h2>
 
-        {profile.entries.length === 0 ? (
-          <p>No entries yet.</p>
-        ) : (
-          <div>
-            {profile.entries.map((entry) => (
-              <EntryCard key={entry.id} entry={entry} />
-            ))}
-          </div>
-        )}
+        <ProfileEntriesList
+          entries={profile.entries}
+          isOwnProfile={socialInfo.status === "SELF"}
+        />
       </section>
     </main>
   );

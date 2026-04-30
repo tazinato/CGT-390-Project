@@ -58,7 +58,8 @@ export async function createAuthSession(userId: string) {
 
 export async function clearAuthSession() {
   const cookieStore = await cookies();
-  const sessionId = cookieStore.get(getAuthCookieName())?.value;
+  const cookieName = getAuthCookieName();
+  const sessionId = cookieStore.get(cookieName)?.value;
 
   if (sessionId) {
     await prisma.authSession.deleteMany({
@@ -68,7 +69,14 @@ export async function clearAuthSession() {
     });
   }
 
-  cookieStore.delete(getAuthCookieName());
+  cookieStore.set(cookieName, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 0,
+    expires: new Date(0),
+  });
 }
 
 export async function getCurrentUser() {
@@ -107,7 +115,7 @@ export async function getCurrentUser() {
   }
 
   if (session.expiresAt <= new Date()) {
-    await prisma.authSession.delete({
+    await prisma.authSession.deleteMany({
       where: {
         id: session.id,
       },

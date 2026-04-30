@@ -26,6 +26,12 @@ type TmdbExtras = {
   cast: TmdbPerson[];
 };
 
+type RawgGameTrailer = {
+  name: string;
+  url: string;
+  previewUrl: string | null;
+};
+
 function getEmptyTmdbExtras(): TmdbExtras {
   return {
     trailer: null,
@@ -62,6 +68,7 @@ function cleanDescription(value: string | null | undefined) {
     .replace(/&amp;/g, "&")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
+    .replace(/\s+Español[\s\S]*$/i, "")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -137,7 +144,7 @@ function MediaCoverDisplay({ media }: { media: any }) {
               src={media.coverUrl}
               alt={`${media.title} cover`}
               style={{
-                      height: "100%",
+                height: "100%",
                 objectFit: "cover",
                 display: "block",
               }}
@@ -211,6 +218,66 @@ function getTmdbExternalRef(media: any) {
     const provider = String(ref.provider).toUpperCase();
     return provider === "TMDB";
   });
+}
+
+function getRawgExternalRef(media: any) {
+  return media.externalRefs?.find((ref: any) => {
+    const provider = String(ref.provider).toUpperCase();
+    return provider === "RAWG";
+  });
+}
+
+async function getRawgGameTrailer(media: any): Promise<RawgGameTrailer | null> {
+  const rawgRef = getRawgExternalRef(media);
+
+  if (!rawgRef || media.type !== "GAME") {
+    return null;
+  }
+
+  const apiKey = process.env.RAWG_API_KEY;
+
+  if (!apiKey) {
+    return null;
+  }
+
+  const rawgId = rawgRef.externalId;
+
+  const res = await fetch(
+    `https://api.rawg.io/api/games/${encodeURIComponent(
+      rawgId
+    )}/movies?key=${encodeURIComponent(apiKey)}`,
+    {
+      next: {
+        revalidate: 86400,
+      },
+    }
+  );
+
+  if (!res.ok) {
+    return null;
+  }
+
+  const data = await res.json();
+  const videos = Array.isArray(data?.results) ? data.results : [];
+
+  const trailer =
+    videos.find((video: any) =>
+      String(video?.name || "").toLowerCase().includes("trailer")
+    ) ||
+    videos.find((video: any) => video?.data?.max || video?.data?.["480"]) ||
+    null;
+
+  const videoUrl = trailer?.data?.max || trailer?.data?.["480"] || null;
+
+  if (!videoUrl) {
+    return null;
+  }
+
+  return {
+    name: trailer.name || "Gameplay Trailer",
+    url: videoUrl,
+    previewUrl: trailer.preview || null,
+  };
 }
 
 async function getTmdbExtras(media: any): Promise<TmdbExtras> {
@@ -488,7 +555,10 @@ export default async function MediaPage({ params }: Props) {
     notFound();
   }
 
-  const tmdbExtras = await getTmdbExtras(media);
+  const [tmdbExtras, rawgGameTrailer] = await Promise.all([
+    getTmdbExtras(media),
+    getRawgGameTrailer(media),
+  ]);
 
   const ratings = media.entries
     .map((entry: any) => entry.ratingValue)
@@ -513,7 +583,61 @@ export default async function MediaPage({ params }: Props) {
   ];
 
   return (
-    <main style={{ padding: "36px clamp(24px, 4vw, 64px)", width: "100%", maxWidth: "none", margin: 0, boxSizing: "border-box" }}>
+    <main
+      style={{
+        padding: "36px clamp(24px, 4vw, 64px)",
+        width: "100%",
+        maxWidth: "none",
+        margin: 0,
+        boxSizing: "border-box",
+      }}
+    >
+      <style>{`
+        .media-hero:has(.media-actions-panel) .media-hero-content {
+          height: 645px;
+          display: grid !important;
+          grid-template-rows: auto minmax(0, 1fr) auto;
+          overflow: hidden;
+        }
+
+        .media-hero:has(.media-actions-panel) .media-info-block {
+          min-height: 0;
+          overflow: hidden;
+        }
+
+        .media-hero:has(.media-actions-panel) .media-description {
+          display: -webkit-box;
+          -webkit-line-clamp: 12;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+
+        .media-hero:has(.media-actions-panel) .media-actions-wrapper {
+          margin-top: 18px !important;
+          align-self: stretch;
+        }
+
+        .media-hero:has(.media-actions-panel) .media-actions-root {
+          height: auto !important;
+          display: block !important;
+        }
+
+        .media-hero:has(.media-actions-panel) .media-actions-root > button {
+          width: auto !important;
+          display: inline-flex !important;
+        }
+
+        .media-hero:has(.media-actions-panel) .media-actions-panel {
+          height: auto !important;
+          min-height: 175px;
+        }
+
+        .media-hero:has(.media-actions-panel) .media-actions-panel textarea {
+          min-height: 82px !important;
+          max-height: 105px !important;
+        }
+      `}</style>
+
       <section
         className="media-hero"
         style={{
@@ -536,67 +660,67 @@ export default async function MediaPage({ params }: Props) {
         </div>
 
         <div
+          className="media-hero-content"
           style={{
             minWidth: 0,
             width: "100%",
             maxWidth: "none",
-            height: 645,
-            display: "grid",
-            gridTemplateRows: "auto minmax(0, 1fr) 270px",
+            minHeight: 0,
+            display: "flex",
+            flexDirection: "column",
             alignItems: "stretch",
             paddingTop: 14,
             boxSizing: "border-box",
           }}
         >
           <div>
-          <p
-            style={{
-              margin: 0,
-              textTransform: "uppercase",
-              opacity: 0.7,
-              fontWeight: 900,
-              letterSpacing: "0.04em",
-            }}
-          >
-            {media.type}
-          </p>
-
-          {isTmdbVisualMedia && tmdbExtras.logoUrl ? (
-            <div style={{ margin: "12px 0 14px", width: "100%" }}>
-              <img
-                src={tmdbExtras.logoUrl}
-                alt={media.title}
-                style={{
-                  display: "block",
-                  width: "min(100%, 900px)",
-                  maxHeight: 155,
-                  objectFit: "contain",
-                  objectPosition: "left center",
-                }}
-              />
-            </div>
-          ) : (
-            <h1
+            <p
               style={{
-                margin: "10px 0 12px",
-                fontSize: 48,
-                lineHeight: 0.98,
-                letterSpacing: "-0.05em",
+                margin: 0,
+                textTransform: "uppercase",
+                opacity: 0.7,
+                fontWeight: 900,
+                letterSpacing: "0.04em",
               }}
             >
-              {media.title}
-              {releaseYear && <span> ({releaseYear})</span>}
-            </h1>
-          )}
+              {media.type}
+            </p>
 
+            {isTmdbVisualMedia && tmdbExtras.logoUrl ? (
+              <div style={{ margin: "12px 0 14px", width: "100%" }}>
+                <img
+                  src={tmdbExtras.logoUrl}
+                  alt={media.title}
+                  style={{
+                    display: "block",
+                    width: "min(100%, 900px)",
+                    maxHeight: 155,
+                    objectFit: "contain",
+                    objectPosition: "left center",
+                  }}
+                />
+              </div>
+            ) : (
+              <h1
+                style={{
+                  margin: "10px 0 12px",
+                  fontSize: 48,
+                  lineHeight: 0.98,
+                  letterSpacing: "-0.05em",
+                }}
+              >
+                {media.title}
+                {releaseYear && <span> ({releaseYear})</span>}
+              </h1>
+            )}
           </div>
 
           <div
+            className="media-info-block"
             style={{
               width: "100%",
               maxWidth: "none",
               minHeight: 0,
-              overflow: "hidden",
             }}
           >
             <div
@@ -649,7 +773,7 @@ export default async function MediaPage({ params }: Props) {
               </p>
             ) : null}
 
-            {media.description ? (
+            {descriptionText ? (
               <p
                 className="media-description"
                 style={{
@@ -658,22 +782,19 @@ export default async function MediaPage({ params }: Props) {
                   margin: "14px 0 0",
                   width: "100%",
                   maxWidth: "min(100%, 1100px)",
-                  display: "-webkit-box",
-                  WebkitLineClamp: 4,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
                 }}
               >
-                {media.description}
+                {descriptionText}
               </p>
             ) : null}
           </div>
 
           <div
+            className="media-actions-wrapper"
             style={{
               width: "100%",
               maxWidth: "none",
-              marginTop: 16,
+              marginTop: 22,
               alignSelf: "stretch",
             }}
           >
@@ -731,9 +852,46 @@ export default async function MediaPage({ params }: Props) {
         </section>
       )}
 
+      {media.type === "GAME" && (
+        <section style={{ marginTop: 40, width: "100%", maxWidth: "none" }}>
+          <h2>Gameplay Trailer</h2>
+
+          {rawgGameTrailer ? (
+            <div
+              style={{
+                aspectRatio: "16 / 9",
+                width: "100%",
+                maxWidth: "none",
+                borderRadius: 12,
+                overflow: "hidden",
+                border: "1px solid var(--app-border)",
+                background: "black",
+              }}
+            >
+              <video
+                src={rawgGameTrailer.url}
+                title={rawgGameTrailer.name}
+                controls
+                poster={rawgGameTrailer.previewUrl ?? undefined}
+                preload="metadata"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  display: "block",
+                  objectFit: "contain",
+                  background: "black",
+                }}
+              >
+                Sorry, your browser does not support embedded videos.
+              </video>
+            </div>
+          ) : (
+            <p>No gameplay trailer available.</p>
+          )}
+        </section>
+      )}
+
       <hr style={{ margin: "40px 0" }} />
-
-
 
       <section style={{ marginTop: 30, width: "100%", maxWidth: "none" }}>
         <h2>Reviews</h2>
