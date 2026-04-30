@@ -301,7 +301,7 @@ export default function ProfileEntriesList({ entries, isOwnProfile }: Props) {
       const data = await safeJson(res);
 
       if (!res.ok) {
-        setEntryMessage(data?.error || "Failed to save entry.");
+        setEntryMessage(entry.id, data?.error || "Failed to save entry.");
         return;
       }
 
@@ -339,7 +339,7 @@ export default function ProfileEntriesList({ entries, isOwnProfile }: Props) {
       const data = await safeJson(res);
 
       if (!res.ok) {
-        setEntryMessage(data?.error || "Failed to delete entry.");
+        setEntryMessage(entry.id, data?.error || "Failed to delete entry.");
         return;
       }
 
