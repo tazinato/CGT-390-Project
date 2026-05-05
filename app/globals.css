@@ -82,11 +82,14 @@ h2,
 h3,
 h4,
 h5,
-h6,
-span,
+h6 {
+  overflow-wrap: anywhere;
+}
+
 a,
 button {
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+  white-space: nowrap;
 }
 
 .media-hero:has(.media-actions-panel) .media-description {
