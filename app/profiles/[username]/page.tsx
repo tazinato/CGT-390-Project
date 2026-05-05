@@ -228,12 +228,14 @@ function SocialBadge({ socialInfo }: { socialInfo: SocialInfo }) {
     <div
       style={{
         display: "inline-block",
-        padding: "6px 10px",
-        border: "1px solid var(--app-border)",
+        padding: "7px 11px",
+        border: "1px solid #ffd6d4",
         borderRadius: 999,
-        background: "#f7f7f7",
+        background: "#fff2f1",
+        color: "#111",
         fontSize: 14,
-        fontWeight: 600,
+        fontWeight: 700,
+        whiteSpace: "nowrap",
       }}
     >
       {labels[socialInfo.status]}
@@ -248,29 +250,59 @@ function ProfileActions({
   profileUsername: string;
   socialInfo: SocialInfo;
 }) {
+  const linkStyle = {
+    color: "#d95d59",
+    fontWeight: 700,
+    textDecoration: "none",
+  };
+
   if (socialInfo.status === "SELF") {
     return (
-      <div style={{ marginTop: 16 }}>
-        <a href="/add-entry">Add Entry</a>
-        {" | "}
-        <a href="/favorites">Edit Top 4</a>
-        {" | "}
-        <a href="/friends">Find Friends</a>
-        {" | "}
-        <a href="/feed">Feed</a>
-        {" | "}
-        <a href="/logout">Log Out</a>
+      <div
+        style={{
+          marginTop: 18,
+          display: "flex",
+          gap: 10,
+          flexWrap: "wrap",
+        }}
+      >
+        <a href="/add-entry" style={linkStyle}>
+          Add Entry
+        </a>
+        <a href="/favorites" style={linkStyle}>
+          Edit Top 4
+        </a>
+        <a href="/friends" style={linkStyle}>
+          Find Friends
+        </a>
+        <a href="/feed" style={linkStyle}>
+          Feed
+        </a>
+        <a href="/logout" style={linkStyle}>
+          Log Out
+        </a>
       </div>
     );
   }
 
   return (
-    <div style={{ marginTop: 16 }}>
-      <a href="/friends">Manage Friends</a>
-      {" | "}
-      <a href="/feed">Feed</a>
-      {" | "}
-      <a href={`/profiles/${profileUsername}`}>Refresh Profile</a>
+    <div
+      style={{
+        marginTop: 18,
+        display: "flex",
+        gap: 10,
+        flexWrap: "wrap",
+      }}
+    >
+      <a href="/friends" style={linkStyle}>
+        Manage Friends
+      </a>
+      <a href="/feed" style={linkStyle}>
+        Feed
+      </a>
+      <a href={`/profiles/${profileUsername}`} style={linkStyle}>
+        Refresh Profile
+      </a>
     </div>
   );
 }
@@ -285,14 +317,14 @@ function StatCard({
   return (
     <div
       style={{
-        border: "1px solid var(--app-border)",
+        border: "1px solid #ddd",
         borderRadius: 12,
-        padding: 14,
-        background: "var(--app-surface-strong)",
+        padding: 16,
+        background: "#fff",
       }}
     >
       <div style={{ fontSize: 24, fontWeight: 800 }}>{value}</div>
-      <div style={{ color: "#555", fontSize: 14 }}>{label}</div>
+      <div style={{ color: "#555", fontSize: 14, marginTop: 4 }}>{label}</div>
     </div>
   );
 }
@@ -304,10 +336,10 @@ function MediaCoverCard({ media }: { media: Media }) {
         style={{
           width: 160,
           height: 240,
-          border: "1px solid var(--app-border)",
+          border: "1px solid #ddd",
           borderRadius: 8,
           overflow: "hidden",
-          background: "var(--app-surface-strong)",
+          background: "#fff",
           display: "flex",
           flexDirection: "column",
           flexShrink: 0,
@@ -324,6 +356,8 @@ function MediaCoverCard({ media }: { media: Media }) {
             alignItems: "center",
             justifyContent: "center",
             lineHeight: 1.15,
+            background: "#fafafa",
+            borderBottom: "1px solid #eee",
           }}
         >
           {media.albumDetails?.primaryArtistName ?? "Unknown Artist"}
@@ -354,7 +388,7 @@ function MediaCoverCard({ media }: { media: Media }) {
               }}
             />
           ) : (
-            <span style={{ fontSize: 12 }}>No cover</span>
+            <span style={{ fontSize: 12, color: "#666" }}>No cover</span>
           )}
         </div>
 
@@ -386,11 +420,11 @@ function MediaCoverCard({ media }: { media: Media }) {
         decoding="async"
         style={{
           width: 160,
-          height: 240,
+          height: media.type === "BOOK" ? 240 : 240,
           objectFit: "cover",
           borderRadius: 8,
           flexShrink: 0,
-          border: "1px solid var(--app-border)",
+          border: "1px solid #ddd",
           background: "#eee",
         }}
       />
@@ -402,7 +436,7 @@ function MediaCoverCard({ media }: { media: Media }) {
       style={{
         width: 160,
         height: 240,
-        border: "1px solid var(--app-border)",
+        border: "1px solid #ddd",
         borderRadius: 8,
         display: "flex",
         alignItems: "center",
@@ -410,6 +444,7 @@ function MediaCoverCard({ media }: { media: Media }) {
         flexShrink: 0,
         background: "#eee",
         fontSize: 12,
+        color: "#666",
       }}
     >
       No cover
@@ -470,7 +505,13 @@ function FavoriteSlot({ favorite }: { favorite: ProfileFavorite }) {
         display: "block",
       }}
     >
-      <div style={{ marginBottom: 8, fontWeight: 700 }}>
+      <div
+        style={{
+          marginBottom: 8,
+          fontWeight: 700,
+          color: "#d95d59",
+        }}
+      >
         #{favorite.slotNumber}
       </div>
       <MediaCoverCard media={favorite.media} />
@@ -481,7 +522,15 @@ function FavoriteSlot({ favorite }: { favorite: ProfileFavorite }) {
 function EmptyFavoriteSlot({ slotNumber }: { slotNumber: number }) {
   return (
     <div>
-      <div style={{ marginBottom: 8, fontWeight: 700 }}>#{slotNumber}</div>
+      <div
+        style={{
+          marginBottom: 8,
+          fontWeight: 700,
+          color: "#d95d59",
+        }}
+      >
+        #{slotNumber}
+      </div>
       <div
         style={{
           width: 160,
@@ -491,7 +540,7 @@ function EmptyFavoriteSlot({ slotNumber }: { slotNumber: number }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#f7f7f7",
+          background: "#fafafa",
           color: "#777",
           fontSize: 13,
         }}
@@ -502,19 +551,18 @@ function EmptyFavoriteSlot({ slotNumber }: { slotNumber: number }) {
   );
 }
 
-
 function EntryCard({ entry }: { entry: ProfileEntry }) {
   return (
     <article
       style={{
-        border: "1px solid var(--app-border)",
+        border: "1px solid #ddd",
         padding: 16,
         marginBottom: 16,
         borderRadius: 12,
         display: "flex",
         gap: 18,
         alignItems: "flex-start",
-        background: "var(--app-surface-strong)",
+        background: "#fff",
       }}
     >
       <a href={`/media/${entry.media.id}`} style={{ textDecoration: "none" }}>
@@ -523,7 +571,15 @@ function EntryCard({ entry }: { entry: ProfileEntry }) {
 
       <div style={{ flex: 1 }}>
         <h3 style={{ marginTop: 0, marginBottom: 4 }}>
-          <a href={`/media/${entry.media.id}`}>{entry.media.title}</a>
+          <a
+            href={`/media/${entry.media.id}`}
+            style={{
+              color: "#111",
+              textDecoration: "none",
+            }}
+          >
+            {entry.media.title}
+          </a>
         </h3>
 
         <MediaMeta media={entry.media} />
@@ -544,6 +600,10 @@ function EntryCard({ entry }: { entry: ProfileEntry }) {
               marginTop: 12,
               whiteSpace: "pre-wrap",
               lineHeight: 1.45,
+              background: "#f7f8fa",
+              border: "1px solid #eee",
+              borderRadius: 8,
+              padding: 12,
             }}
           >
             {entry.reviewText}
@@ -551,7 +611,16 @@ function EntryCard({ entry }: { entry: ProfileEntry }) {
         )}
 
         <div style={{ marginTop: 12 }}>
-          <a href={`/media/${entry.media.id}`}>View Media</a>
+          <a
+            href={`/media/${entry.media.id}`}
+            style={{
+              color: "#d95d59",
+              fontWeight: 700,
+              textDecoration: "none",
+            }}
+          >
+            View Media
+          </a>
         </div>
       </div>
     </article>
@@ -568,100 +637,206 @@ export default async function ProfilePage({
   const currentUser = await getCurrentUser();
 
   if (!profile) {
-    return <main style={{ padding: 40 }}>Profile not found.</main>;
+    return (
+      <main
+        style={{
+          width: "100%",
+          minHeight: "100vh",
+          margin: 0,
+          boxSizing: "border-box",
+          background: "#f7f8fa",
+          padding: 40,
+        }}
+      >
+        Profile not found.
+      </main>
+    );
   }
 
   const socialInfo = await getSocialInfo(profile.id, currentUser?.id ?? null);
 
   return (
-    <main style={{ padding: "36px clamp(20px, 4vw, 64px)", width: "100%", maxWidth: "none", margin: 0, boxSizing: "border-box" }}>
-      <section style={{ marginBottom: 32 }}>
+    <main
+      style={{
+        width: "100%",
+        minHeight: "100vh",
+        margin: 0,
+        boxSizing: "border-box",
+        background: "#f7f8fa",
+      }}
+    >
+      <section
+        style={{
+          padding: "40px 48px 28px",
+          background: "#fff",
+          borderBottom: "2px solid #ff7f7a",
+        }}
+      >
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             gap: 20,
             alignItems: "flex-start",
+            flexWrap: "wrap",
           }}
         >
           <div>
-            <h1 style={{ marginBottom: 8 }}>
-              {profile.displayName || profile.username} (@{profile.username})
+            <h1
+              style={{
+                margin: 0,
+                fontSize: 42,
+                lineHeight: 1.1,
+              }}
+            >
+              {profile.displayName || profile.username}
             </h1>
 
+            <p
+              style={{
+                margin: "8px 0 0",
+                color: "#555",
+                fontSize: 16,
+              }}
+            >
+              @{profile.username}
+            </p>
+
             {profile.bio && (
-              <p style={{ color: "#555", maxWidth: 680 }}>{profile.bio}</p>
+              <p
+                style={{
+                  color: "#555",
+                  maxWidth: 680,
+                  lineHeight: 1.5,
+                  marginBottom: 0,
+                }}
+              >
+                {profile.bio}
+              </p>
             )}
           </div>
 
           <SocialBadge socialInfo={socialInfo} />
         </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, minmax(120px, 1fr))",
-            gap: 12,
-            marginTop: 22,
-            maxWidth: 720,
-          }}
-        >
-          <StatCard label="entries" value={profile.entries.length} />
-          <StatCard label="friends" value={socialInfo.friendCount} />
-          <StatCard label="top 4 filled" value={profile.favorites.length} />
-          <StatCard label="username" value={`@${profile.username}`} />
-        </div>
-
-        <ProfileActions
-          profileUsername={profile.username}
-          socialInfo={socialInfo}
-        />
-
-        {currentUser ? (
-          <ProfileFriendActions
-            currentUserId={currentUser.id}
-            profileUserId={profile.id}
-            friendshipId={socialInfo.friendshipId}
-            initialStatus={socialInfo.status}
-          />
-        ) : (
-          <p style={{ marginTop: 16 }}>
-            <a href="/login">Log in</a> to add friends.
-          </p>
-        )}
       </section>
 
-      <section style={{ marginBottom: 36 }}>
-        <div
+      <div
+        style={{
+          padding: "28px 48px 40px",
+        }}
+      >
+        <section
           style={{
-            display: "grid",
-            gridTemplateColumns: "auto 430px",
-            gap: 32,
-            alignItems: "start",
-            width: "100%",
+            marginBottom: 28,
+            background: "#fff",
+            border: "1px solid #ddd",
+            borderRadius: 14,
+            padding: 20,
           }}
         >
-          <div>
-            <h2>Top 4 Favorites</h2>
-
-            <ProfileTopFavorites
-              favorites={profile.favorites}
-              isOwnProfile={socialInfo.status === "SELF"}
-            />
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+              gap: 12,
+            }}
+          >
+            <StatCard label="entries" value={profile.entries.length} />
+            <StatCard label="friends" value={socialInfo.friendCount} />
+            <StatCard label="top 4 filled" value={profile.favorites.length} />
+            <StatCard label="username" value={`@${profile.username}`} />
           </div>
 
-          <ProfileMediaMix entries={profile.entries} />
-        </div>
-      </section>
+          <ProfileActions
+            profileUsername={profile.username}
+            socialInfo={socialInfo}
+          />
 
-      <section>
-        <h2>Entries</h2>
+          {currentUser ? (
+            <ProfileFriendActions
+              currentUserId={currentUser.id}
+              profileUserId={profile.id}
+              friendshipId={socialInfo.friendshipId}
+              initialStatus={socialInfo.status}
+            />
+          ) : (
+            <p style={{ marginTop: 16 }}>
+              <a
+                href="/login"
+                style={{
+                  color: "#d95d59",
+                  fontWeight: 700,
+                  textDecoration: "none",
+                }}
+              >
+                Log in
+              </a>{" "}
+              to add friends.
+            </p>
+          )}
+        </section>
 
-        <ProfileEntriesList
-          entries={profile.entries}
-          isOwnProfile={socialInfo.status === "SELF"}
-        />
-      </section>
+        <section
+          style={{
+            marginBottom: 28,
+          }}
+        >
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1fr) 430px",
+              gap: 28,
+              alignItems: "start",
+              width: "100%",
+            }}
+          >
+            <div
+              style={{
+                background: "#fff",
+                border: "1px solid #ddd",
+                borderRadius: 14,
+                padding: 20,
+              }}
+            >
+              <h2 style={{ marginTop: 0, marginBottom: 16 }}>
+                Top 4 Favorites
+              </h2>
+
+              <ProfileTopFavorites
+                favorites={profile.favorites}
+                isOwnProfile={socialInfo.status === "SELF"}
+              />
+            </div>
+
+            <div
+              style={{
+                background: "#fff",
+                border: "1px solid #ddd",
+                borderRadius: 14,
+                padding: 20,
+              }}
+            >
+              <ProfileMediaMix entries={profile.entries} />
+            </div>
+          </div>
+        </section>
+
+        <section
+          style={{
+            background: "#fff",
+            border: "1px solid #ddd",
+            borderRadius: 14,
+            padding: 20,
+          }}
+        >
+          <h2 style={{ marginTop: 0, marginBottom: 16 }}>Entries</h2>
+
+          <ProfileEntriesList
+            entries={profile.entries}
+            isOwnProfile={socialInfo.status === "SELF"}
+          />
+        </section>
+      </div>
     </main>
   );
 }
