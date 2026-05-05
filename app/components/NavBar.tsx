@@ -20,9 +20,11 @@ function NavLink({ href, label }: { href: string; label: string }) {
       style={{
         color: "#111",
         textDecoration: "none",
-        fontWeight: 900,
+        fontWeight: 700,
         whiteSpace: "nowrap",
-        fontSize: 16,
+        fontSize: 15,
+        padding: "9px 11px",
+
       }}
     >
       {label}
@@ -78,52 +80,52 @@ export default function NavBar() {
   return (
     <nav
       style={{
+        padding: "18px 48px",
+        borderBottom: "3px solid #ff7f7a",
+        display: "grid",
+        gridTemplateColumns: "auto minmax(280px, 560px) auto",
+        alignItems: "center",
+        gap: 24,
+        background: "#ffe2df",
         position: "sticky",
         top: 0,
-        zIndex: 100,
-        padding: "24px clamp(24px, 4vw, 80px)",
-        borderBottom: "1px solid rgba(0,0,0,0.08)",
-        display: "grid",
-        gridTemplateColumns: "auto minmax(0, 1fr) auto",
-        alignItems: "center",
-        gap: 34,
-        background: "#ffd6dc",
-        boxSizing: "border-box",
+        zIndex: 20,
       }}
     >
-      <div style={{ display: "flex", gap: 34, alignItems: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: 10,
+          alignItems: "center",
+          flexWrap: "wrap",
+        }}
+      >
         <Link
           href="/"
           style={{
             color: "#111",
             textDecoration: "none",
-            fontWeight: 1000,
-            fontSize: 30,
-            letterSpacing: "-0.045em",
-            whiteSpace: "nowrap",
+            fontWeight: 900,
+            fontSize: 24,
+            marginRight: 10,
+            padding: "8px 12px",
           }}
         >
           MediaApp
         </Link>
 
-        <div style={{ display: "flex", gap: 30, alignItems: "center" }}>
-          <NavLink href="/" label="Home" />
-          <NavLink href="/add-entry" label="Add Entry" />
-          <NavLink href="/favorites" label="Favorites" />
-          <NavLink href="/friends" label="Friends" />
-        </div>
+        <NavLink href="/" label="Home" />
+        <NavLink href="/add-entry" label="Add Entry" />
+        <NavLink href="/favorites" label="Favorites" />
+        <NavLink href="/friends" label="Friends" />
       </div>
 
       <form
         onSubmit={submitSearch}
         style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(240px, 1fr) auto",
-          gap: 12,
-          justifySelf: "stretch",
-          maxWidth: 760,
+          display: "flex",
+          gap: 8,
           width: "100%",
-          marginLeft: "auto",
         }}
       >
         <input
@@ -132,26 +134,23 @@ export default function NavBar() {
           placeholder="Search titles, people, authors, artists..."
           style={{
             width: "100%",
-            boxSizing: "border-box",
-            padding: "15px 18px",
-            border: "1px solid rgba(150,143,143,0.42)",
-            borderRadius: 10,
-            fontSize: 16,
-            background: "rgba(255,255,255,0.82)",
-            outline: "none",
+            padding: "12px 14px",
+            border: "1px solid #f0b7b3",
+            borderRadius: 8,
+            fontSize: 14,
+            background: "#fff",
           }}
         />
 
         <button
           type="submit"
           style={{
-            padding: "15px 22px",
-            border: "1px solid #7c7575",
-            borderRadius: 10,
-            background: "#7c7575",
+            padding: "12px 16px",
+            border: "1px solid #ff7f7a",
+            borderRadius: 8,
+            background: "#ff7f7a",
             color: "white",
-            fontWeight: 900,
-            fontSize: 16,
+            fontWeight: 700,
             cursor: "pointer",
           }}
         >
@@ -162,10 +161,11 @@ export default function NavBar() {
       <div
         style={{
           display: "flex",
-          gap: 12,
+          gap: 8,
           alignItems: "center",
           justifyContent: "flex-end",
           minHeight: 22,
+          flexWrap: "wrap",
         }}
       >
         {currentUser ? (
@@ -173,13 +173,14 @@ export default function NavBar() {
             <Link
               href={`/profiles/${currentUser.username}`}
               style={{
-                padding: "13px 18px",
-                borderRadius: 9,
-                background: "rgba(255,255,255,0.72)",
                 color: "#111",
                 textDecoration: "none",
-                fontWeight: 900,
-                whiteSpace: "nowrap",
+                fontWeight: 700,
+                fontSize: 15,
+                padding: "9px 12px",
+                borderRadius: 8,
+                background: "#fff",
+                border: "1px solid #ffd6d4",
               }}
             >
               Profile
@@ -188,13 +189,13 @@ export default function NavBar() {
             <Link
               href="/logout"
               style={{
-                padding: "13px 18px",
-                borderRadius: 9,
-                background: "#7c7575",
                 color: "white",
                 textDecoration: "none",
-                fontWeight: 900,
-                whiteSpace: "nowrap",
+                fontWeight: 700,
+                fontSize: 15,
+                padding: "9px 12px",
+                borderRadius: 8,
+                background: "#ff7f7a",
               }}
             >
               Log Out
@@ -205,13 +206,14 @@ export default function NavBar() {
             <Link
               href="/login"
               style={{
-                padding: "13px 18px",
-                borderRadius: 9,
-                background: "rgba(255,255,255,0.72)",
                 color: "#111",
                 textDecoration: "none",
-                fontWeight: 900,
-                whiteSpace: "nowrap",
+                fontWeight: 700,
+                fontSize: 15,
+                padding: "9px 12px",
+                borderRadius: 8,
+                background: "#fff",
+                border: "1px solid #ffd6d4",
               }}
             >
               Log In
@@ -220,13 +222,13 @@ export default function NavBar() {
             <Link
               href="/signup"
               style={{
-                padding: "13px 18px",
-                borderRadius: 9,
-                background: "#7c7575",
                 color: "white",
                 textDecoration: "none",
-                fontWeight: 900,
-                whiteSpace: "nowrap",
+                fontWeight: 700,
+                fontSize: 15,
+                padding: "10px 14px",
+                borderRadius: 8,
+                background: "#ff7f7a",
               }}
             >
               Sign Up
