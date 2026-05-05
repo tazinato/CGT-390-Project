@@ -104,10 +104,10 @@ function MediaCoverDisplay({ media }: { media: any }) {
         style={{
           width: 280,
           height: 420,
-          border: "1px solid var(--app-border)",
-          borderRadius: 10,
+          border: "1px solid #ddd",
+          borderRadius: 14,
           overflow: "hidden",
-          background: "var(--app-surface-strong)",
+          background: "#fff",
           display: "flex",
           flexDirection: "column",
         }}
@@ -123,6 +123,8 @@ function MediaCoverDisplay({ media }: { media: any }) {
             alignItems: "center",
             justifyContent: "center",
             lineHeight: 1.15,
+            background: "#fff2f1",
+            borderBottom: "1px solid #ffd6d4",
           }}
         >
           {media.albumDetails?.primaryArtistName ?? "Unknown Artist"}
@@ -145,12 +147,13 @@ function MediaCoverDisplay({ media }: { media: any }) {
               alt={`${media.title} cover`}
               style={{
                 height: "100%",
+                width: "100%",
                 objectFit: "cover",
                 display: "block",
               }}
             />
           ) : (
-            <span style={{ fontSize: 13 }}>No cover</span>
+            <span style={{ fontSize: 13, color: "#666" }}>No cover</span>
           )}
         </div>
 
@@ -184,10 +187,9 @@ function MediaCoverDisplay({ media }: { media: any }) {
           aspectRatio: "2 / 3",
           height: "auto",
           objectFit: "cover",
-          borderRadius: 18,
-          border: "1px solid var(--app-border, #ccc)",
+          borderRadius: 16,
+          border: "1px solid #ddd",
           background: "#eee",
-          boxShadow: "0 24px 70px rgba(0,0,0,0.14)",
           display: "block",
         }}
       />
@@ -199,8 +201,8 @@ function MediaCoverDisplay({ media }: { media: any }) {
       style={{
         width: 280,
         height: 420,
-        border: "1px solid var(--app-border)",
-        borderRadius: 10,
+        border: "1px solid #ddd",
+        borderRadius: 14,
         background: "#eee",
         display: "flex",
         alignItems: "center",
@@ -432,15 +434,25 @@ function MediaInfoRow({ media }: { media: any }) {
     <div
       style={{
         display: "flex",
-        gap: 18,
+        gap: 8,
         flexWrap: "wrap",
         alignItems: "center",
-        margin: "10px 0 10px",
-        fontSize: 15,
+        margin: "12px 0 10px",
+        fontSize: 14,
       }}
     >
       {items.map((item) => (
-        <strong key={item}>{item}</strong>
+        <strong
+          key={item}
+          style={{
+            background: "#fff2f1",
+            border: "1px solid #ffd6d4",
+            borderRadius: 8,
+            padding: "6px 9px",
+          }}
+        >
+          {item}
+        </strong>
       ))}
     </div>
   );
@@ -456,8 +468,18 @@ function PersonScroller({
   if (people.length === 0) return null;
 
   return (
-    <section style={{ marginTop: 30, width: "100%", maxWidth: "none" }}>
-      <h2>{title}</h2>
+    <section
+      style={{
+        marginTop: 28,
+        width: "100%",
+        maxWidth: "none",
+        background: "#fff",
+        border: "1px solid #ddd",
+        borderRadius: 14,
+        padding: 20,
+      }}
+    >
+      <h2 style={{ marginTop: 0 }}>{title}</h2>
 
       <div
         style={{
@@ -475,10 +497,10 @@ function PersonScroller({
             style={{
               width: 118,
               flex: "0 0 auto",
-              border: "1px solid var(--app-border)",
+              border: "1px solid #ddd",
               borderRadius: 10,
               padding: 10,
-              background: "var(--app-surface-strong)",
+              background: "#fff",
             }}
           >
             <div
@@ -492,6 +514,7 @@ function PersonScroller({
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: 12,
+                color: "#666",
               }}
             >
               {person.imageUrl ? (
@@ -585,11 +608,11 @@ export default async function MediaPage({ params }: Props) {
   return (
     <main
       style={{
-        padding: "36px clamp(24px, 4vw, 64px)",
         width: "100%",
-        maxWidth: "none",
+        minHeight: "100vh",
         margin: 0,
         boxSizing: "border-box",
+        background: "#f7f8fa",
       }}
     >
       <style>{`
@@ -639,307 +662,435 @@ export default async function MediaPage({ params }: Props) {
       `}</style>
 
       <section
-        className="media-hero"
         style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(360px, 430px) minmax(0, 1fr)",
-          gap: 40,
-          alignItems: "start",
-          width: "100%",
-          maxWidth: "none",
-          margin: 0,
+          padding: "40px 48px 28px",
+          background: "#fff",
+          borderBottom: "2px solid #ff7f7a",
         }}
       >
-        <div
+        <p
           style={{
-            alignSelf: "start",
-            minWidth: 0,
+            margin: "0 0 8px",
+            color: "#d95d59",
+            fontWeight: 700,
+            textTransform: "uppercase",
+            fontSize: 13,
           }}
         >
-          <MediaCoverDisplay media={media} />
-        </div>
+          {media.type}
+        </p>
 
-        <div
-          className="media-hero-content"
+        <h1
           style={{
-            minWidth: 0,
+            margin: 0,
+            fontSize: 42,
+            lineHeight: 1.1,
+          }}
+        >
+          {media.title}
+          {releaseYear && <span> ({releaseYear})</span>}
+        </h1>
+      </section>
+
+      <div
+        style={{
+          padding: "28px 48px 40px",
+        }}
+      >
+        <section
+          className="media-hero"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(300px, 430px) minmax(0, 1fr)",
+            gap: 32,
+            alignItems: "start",
             width: "100%",
             maxWidth: "none",
-            minHeight: 0,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "stretch",
-            paddingTop: 14,
-            boxSizing: "border-box",
+            margin: 0,
+            background: "#fff",
+            border: "1px solid #ddd",
+            borderRadius: 14,
+            padding: 20,
           }}
         >
-          <div>
-            <p
+          <div
+            style={{
+              alignSelf: "start",
+              minWidth: 0,
+            }}
+          >
+            <MediaCoverDisplay media={media} />
+          </div>
+
+          <div
+            className="media-hero-content"
+            style={{
+              minWidth: 0,
+              width: "100%",
+              maxWidth: "none",
+              minHeight: 0,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "stretch",
+              boxSizing: "border-box",
+            }}
+          >
+            <div>
+              <p
+                style={{
+                  margin: 0,
+                  textTransform: "uppercase",
+                  color: "#d95d59",
+                  fontWeight: 700,
+                  letterSpacing: "0.04em",
+                  fontSize: 13,
+                }}
+              >
+                {media.type}
+              </p>
+
+              {isTmdbVisualMedia && tmdbExtras.logoUrl ? (
+                <div
+                  style={{
+                    margin: "12px 0 14px",
+                    width: "100%",
+                    minHeight: 145,
+                    borderRadius: 14,
+                    border: "1px solid #ddd",
+                    background:
+                      "linear-gradient(135deg, #111111 0%, #3b3b3b 45%, #ff7f7a 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    padding: 22,
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <img
+                    src={tmdbExtras.logoUrl}
+                    alt={media.title}
+                    style={{
+                      display: "block",
+                      width: "min(100%, 850px)",
+                      maxHeight: 145,
+                      objectFit: "contain",
+                      objectPosition: "left center",
+                      filter:
+                        "drop-shadow(0 2px 4px rgba(0,0,0,0.7)) drop-shadow(0 0 10px rgba(255,255,255,0.2))",
+                    }}
+                  />
+                </div>
+              ) : (
+                <div
+                  style={{
+                    margin: "12px 0 14px",
+                    borderRadius: 14,
+                    border: "1px solid #ffd6d4",
+                    background:
+                      "linear-gradient(135deg, #fff2f1 0%, #ffffff 60%, #ffe2df 100%)",
+                    padding: 18,
+                  }}
+                >
+                  <h1
+                    style={{
+                      margin: 0,
+                      fontSize: 44,
+                      lineHeight: 1,
+                    }}
+                  >
+                    {media.title}
+                    {releaseYear && <span> ({releaseYear})</span>}
+                  </h1>
+                </div>
+              )}
+            </div>
+
+            <div
+              className="media-info-block"
               style={{
-                margin: 0,
-                textTransform: "uppercase",
-                opacity: 0.7,
-                fontWeight: 900,
-                letterSpacing: "0.04em",
+                width: "100%",
+                maxWidth: "none",
+                minHeight: 0,
               }}
             >
-              {media.type}
-            </p>
-
-            {isTmdbVisualMedia && tmdbExtras.logoUrl ? (
-              <div style={{ margin: "12px 0 14px", width: "100%" }}>
-                <img
-                  src={tmdbExtras.logoUrl}
-                  alt={media.title}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: 12,
+                  flexWrap: "wrap",
+                  width: "100%",
+                }}
+              >
+                <h2
                   style={{
-                    display: "block",
-                    width: "min(100%, 900px)",
-                    maxHeight: 155,
-                    objectFit: "contain",
-                    objectPosition: "left center",
+                    margin: 0,
+                    fontSize: 28,
+                    lineHeight: 1.1,
+                  }}
+                >
+                  {releaseYear ? `${media.title} (${releaseYear})` : media.title}
+                </h2>
+
+                <MediaInfoRow media={media} />
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: 12,
+                  flexWrap: "wrap",
+                  marginTop: 12,
+                  fontSize: 14,
+                }}
+              >
+                <span
+                  style={{
+                    background: "#f7f8fa",
+                    border: "1px solid #ddd",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                  }}
+                >
+                  <strong>Average rating:</strong>{" "}
+                  {averageRating === null
+                    ? "No ratings yet"
+                    : `${averageRating.toFixed(1)}/10`}
+                </span>
+
+                <span
+                  style={{
+                    background: "#f7f8fa",
+                    border: "1px solid #ddd",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                  }}
+                >
+                  <strong>Total entries:</strong> {media.entries.length}
+                </span>
+              </div>
+
+              {media.originalTitle && media.originalTitle !== media.title ? (
+                <p style={{ marginBottom: 8, color: "#555" }}>
+                  <strong>Original title:</strong> {media.originalTitle}
+                </p>
+              ) : null}
+
+              {descriptionText ? (
+                <p
+                  className="media-description"
+                  style={{
+                    lineHeight: 1.45,
+                    fontSize: 16,
+                    margin: "16px 0 0",
+                    width: "100%",
+                    maxWidth: "min(100%, 1100px)",
+                    color: "#333",
+                  }}
+                >
+                  {descriptionText}
+                </p>
+              ) : null}
+            </div>
+
+            <div
+              className="media-actions-wrapper"
+              style={{
+                width: "100%",
+                maxWidth: "none",
+                marginTop: 22,
+                alignSelf: "stretch",
+              }}
+            >
+              <MediaActions
+                mediaId={String(media.id)}
+                mediaType={media.type}
+                existingEntry={null}
+              />
+            </div>
+          </div>
+        </section>
+
+        {isTmdbVisualMedia && castAndCrew.length > 0 ? (
+          <PersonScroller title="Cast & Crew" people={castAndCrew} />
+        ) : null}
+
+        {isTmdbVisualMedia && (
+          <section
+            style={{
+              marginTop: 28,
+              width: "100%",
+              maxWidth: "none",
+              background: "#fff",
+              border: "1px solid #ddd",
+              borderRadius: 14,
+              padding: 20,
+            }}
+          >
+            <h2 style={{ marginTop: 0 }}>Trailer</h2>
+
+            {tmdbExtras.trailer ? (
+              <div
+                style={{
+                  aspectRatio: "16 / 9",
+                  width: "100%",
+                  maxWidth: "none",
+                  borderRadius: 12,
+                  overflow: "hidden",
+                  border: "1px solid #ddd",
+                  background: "black",
+                }}
+              >
+                <iframe
+                  src={tmdbExtras.trailer.url}
+                  title={tmdbExtras.trailer.name}
+                  allowFullScreen
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    border: 0,
                   }}
                 />
               </div>
             ) : (
-              <h1
-                style={{
-                  margin: "10px 0 12px",
-                  fontSize: 48,
-                  lineHeight: 0.98,
-                  letterSpacing: "-0.05em",
-                }}
-              >
-                {media.title}
-                {releaseYear && <span> ({releaseYear})</span>}
-              </h1>
+              <p style={{ color: "#777", marginBottom: 0 }}>
+                No trailer available.
+              </p>
             )}
-          </div>
+          </section>
+        )}
 
-          <div
-            className="media-info-block"
+        {media.type === "GAME" && (
+          <section
             style={{
+              marginTop: 28,
               width: "100%",
               maxWidth: "none",
-              minHeight: 0,
+              background: "#fff",
+              border: "1px solid #ddd",
+              borderRadius: 14,
+              padding: 20,
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "baseline",
-                gap: 18,
-                flexWrap: "wrap",
-                width: "100%",
-              }}
-            >
-              <h2
+            <h2 style={{ marginTop: 0 }}>Gameplay Trailer</h2>
+
+            {rawgGameTrailer ? (
+              <div
                 style={{
-                  margin: 0,
-                  fontSize: 30,
-                  lineHeight: 1.05,
-                  letterSpacing: "-0.035em",
-                }}
-              >
-                {releaseYear ? `${media.title} (${releaseYear})` : media.title}
-              </h2>
-
-              <MediaInfoRow media={media} />
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                gap: 18,
-                flexWrap: "wrap",
-                marginTop: 10,
-                fontSize: 14,
-              }}
-            >
-              <span>
-                <strong>Average rating:</strong>{" "}
-                {averageRating === null
-                  ? "No ratings yet"
-                  : `${averageRating.toFixed(1)}/10`}
-              </span>
-
-              <span>
-                <strong>Total entries:</strong> {media.entries.length}
-              </span>
-            </div>
-
-            {media.originalTitle && media.originalTitle !== media.title ? (
-              <p style={{ marginBottom: 8 }}>
-                <strong>Original title:</strong> {media.originalTitle}
-              </p>
-            ) : null}
-
-            {descriptionText ? (
-              <p
-                className="media-description"
-                style={{
-                  lineHeight: 1.34,
-                  fontSize: 17,
-                  margin: "14px 0 0",
+                  aspectRatio: "16 / 9",
                   width: "100%",
-                  maxWidth: "min(100%, 1100px)",
-                }}
-              >
-                {descriptionText}
-              </p>
-            ) : null}
-          </div>
-
-          <div
-            className="media-actions-wrapper"
-            style={{
-              width: "100%",
-              maxWidth: "none",
-              marginTop: 22,
-              alignSelf: "stretch",
-            }}
-          >
-            <MediaActions
-              mediaId={String(media.id)}
-              mediaType={media.type}
-              existingEntry={null}
-            />
-          </div>
-        </div>
-      </section>
-
-      {isTmdbVisualMedia && castAndCrew.length > 0 ? (
-        <section
-          style={{
-            marginTop: 34,
-            width: "100%",
-            maxWidth: "none",
-          }}
-        >
-          <PersonScroller title="Cast & Crew" people={castAndCrew} />
-        </section>
-      ) : null}
-
-      {isTmdbVisualMedia && (
-        <section style={{ marginTop: 40, width: "100%", maxWidth: "none" }}>
-          <h2>Trailer</h2>
-
-          {tmdbExtras.trailer ? (
-            <div
-              style={{
-                aspectRatio: "16 / 9",
-                width: "100%",
-                maxWidth: "none",
-                borderRadius: 12,
-                overflow: "hidden",
-                border: "1px solid var(--app-border)",
-                background: "black",
-              }}
-            >
-              <iframe
-                src={tmdbExtras.trailer.url}
-                title={tmdbExtras.trailer.name}
-                allowFullScreen
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  border: 0,
-                }}
-              />
-            </div>
-          ) : (
-            <p>No trailer available.</p>
-          )}
-        </section>
-      )}
-
-      {media.type === "GAME" && (
-        <section style={{ marginTop: 40, width: "100%", maxWidth: "none" }}>
-          <h2>Gameplay Trailer</h2>
-
-          {rawgGameTrailer ? (
-            <div
-              style={{
-                aspectRatio: "16 / 9",
-                width: "100%",
-                maxWidth: "none",
-                borderRadius: 12,
-                overflow: "hidden",
-                border: "1px solid var(--app-border)",
-                background: "black",
-              }}
-            >
-              <video
-                src={rawgGameTrailer.url}
-                title={rawgGameTrailer.name}
-                controls
-                poster={rawgGameTrailer.previewUrl ?? undefined}
-                preload="metadata"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  display: "block",
-                  objectFit: "contain",
+                  maxWidth: "none",
+                  borderRadius: 12,
+                  overflow: "hidden",
+                  border: "1px solid #ddd",
                   background: "black",
                 }}
               >
-                Sorry, your browser does not support embedded videos.
-              </video>
-            </div>
+                <video
+                  src={rawgGameTrailer.url}
+                  title={rawgGameTrailer.name}
+                  controls
+                  poster={rawgGameTrailer.previewUrl ?? undefined}
+                  preload="metadata"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    display: "block",
+                    objectFit: "contain",
+                    background: "black",
+                  }}
+                >
+                  Sorry, your browser does not support embedded videos.
+                </video>
+              </div>
+            ) : (
+              <p style={{ color: "#777", marginBottom: 0 }}>
+                No gameplay trailer available.
+              </p>
+            )}
+          </section>
+        )}
+
+        <section
+          style={{
+            marginTop: 28,
+            width: "100%",
+            maxWidth: "none",
+            background: "#fff",
+            border: "1px solid #ddd",
+            borderRadius: 14,
+            padding: 20,
+          }}
+        >
+          <h2 style={{ marginTop: 0 }}>Reviews</h2>
+
+          {media.entries.length === 0 ? (
+            <p style={{ color: "#777", marginBottom: 0 }}>
+              No one has logged this yet.
+            </p>
           ) : (
-            <p>No gameplay trailer available.</p>
+            media.entries.map((entry: any) => (
+              <article
+                key={entry.id}
+                style={{
+                  border: "1px solid #ddd",
+                  borderRadius: 12,
+                  padding: 16,
+                  marginBottom: 14,
+                  background: "#fff",
+                }}
+              >
+                <h3 style={{ marginTop: 0, marginBottom: 8 }}>
+                  {entry.user.displayName ?? entry.user.username}
+                  <span
+                    style={{
+                      fontWeight: "normal",
+                      color: "#555",
+                    }}
+                  >
+                    {" "}
+                    (@{entry.user.username})
+                  </span>
+                </h3>
+
+                <p style={{ margin: "6px 0" }}>
+                  <strong>Status:</strong> {entry.status}
+                </p>
+
+                <p style={{ margin: "6px 0" }}>
+                  <strong>Rating:</strong> {formatRating(entry.ratingValue)}
+                </p>
+
+                {entry.reviewText ? (
+                  <p
+                    style={{
+                      whiteSpace: "pre-wrap",
+                      lineHeight: 1.45,
+                      background: "#f7f8fa",
+                      border: "1px solid #eee",
+                      borderRadius: 8,
+                      padding: 12,
+                    }}
+                  >
+                    {entry.reviewText}
+                  </p>
+                ) : (
+                  <p style={{ color: "#777" }}>No written review.</p>
+                )}
+
+                <p
+                  style={{
+                    fontSize: 13,
+                    color: "#777",
+                    marginBottom: 0,
+                  }}
+                >
+                  Updated {new Date(entry.updatedAt).toLocaleString()}
+                </p>
+              </article>
+            ))
           )}
         </section>
-      )}
-
-      <hr style={{ margin: "40px 0" }} />
-
-      <section style={{ marginTop: 30, width: "100%", maxWidth: "none" }}>
-        <h2>Reviews</h2>
-
-        {media.entries.length === 0 ? (
-          <p>No one has logged this yet.</p>
-        ) : (
-          media.entries.map((entry: any) => (
-            <article
-              key={entry.id}
-              style={{
-                border: "1px solid var(--app-border)",
-                borderRadius: 10,
-                padding: 16,
-                marginBottom: 16,
-              }}
-            >
-              <h3 style={{ marginTop: 0 }}>
-                {entry.user.displayName ?? entry.user.username}
-                <span style={{ fontWeight: "normal" }}>
-                  {" "}
-                  (@{entry.user.username})
-                </span>
-              </h3>
-
-              <p>
-                <strong>Status:</strong> {entry.status}
-              </p>
-
-              <p>
-                <strong>Rating:</strong> {formatRating(entry.ratingValue)}
-              </p>
-
-              {entry.reviewText ? (
-                <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.45 }}>
-                  {entry.reviewText}
-                </p>
-              ) : (
-                <p style={{ opacity: 0.7 }}>No written review.</p>
-              )}
-
-              <p style={{ fontSize: 13, opacity: 0.7 }}>
-                Updated {new Date(entry.updatedAt).toLocaleString()}
-              </p>
-            </article>
-          ))
-        )}
-      </section>
+      </div>
     </main>
   );
 }
