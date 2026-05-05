@@ -1202,55 +1202,208 @@ export default function FeedPage() {
   }, []);
 
   return (
-    <main style={{ padding: "36px clamp(24px, 4vw, 64px)", width: "100%", maxWidth: "none", margin: 0, boxSizing: "border-box" }}>
-      <h1>Feed</h1>
+    <main
+      style={{
+        width: "100%",
+        maxWidth: "none",
+        margin: 0,
+        boxSizing: "border-box",
+        background: "#f7f8fa",
+        minHeight: "100vh",
 
-      {!authLoaded ? null : currentUser ? (
-        <p style={{ color: "#555" }}>
-          Recent activity for{" "}
-          <strong>
-            {currentUser.displayName || currentUser.username} (@
-            {currentUser.username})
-          </strong>
-          .
-        </p>
-      ) : null}
+
+
+
+      }}
+    >
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      <section
+        style={{
+          padding: "42px clamp(24px, 5vw, 72px) 34px",
+          background:
+            "linear-gradient(135deg, #ffffff 0%, #ffffff 58%, #fff4f3 100%)",
+          borderBottom: "3px solid #ff7f7a",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: 24,
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <p
+            style={{
+              margin: "0 0 8px",
+              color: "#e75f5a",
+              fontSize: 13,
+              fontWeight: 900,
+              letterSpacing: "0.09em",
+              textTransform: "uppercase",
+            }}
+          >
+            Community Activity
+          </p>
+
+          <h1
+            style={{
+              margin: 0,
+              fontSize: "clamp(38px, 5vw, 58px)",
+              lineHeight: 0.95,
+              fontWeight: 900,
+              color: "#111111",
+            }}
+          >
+            Feed
+          </h1>
+
+          {!authLoaded ? null : currentUser ? (
+            <p
+              style={{
+                color: "#555555",
+                margin: "14px 0 0",
+                fontSize: 15,
+                lineHeight: 1.45,
+              }}
+            >
+              Recent activity for{" "}
+              <strong>
+                {currentUser.displayName || currentUser.username} (@
+                {currentUser.username})
+              </strong>
+              .
+            </p>
+          ) : (
+            <p
+              style={{
+                color: "#555555",
+                margin: "14px 0 0",
+                fontSize: 15,
+                lineHeight: 1.45,
+              }}
+            >
+              Browse popular movies, TV shows, albums, books, and games.
+            </p>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={refreshFeed}
+          disabled={loading || !currentUser}
+          style={{
+            padding: "11px 18px",
+            borderRadius: 10,
+            border: "none",
+            background:
+              loading || (scope !== "popular" && !currentUser)
+                ? "#ffd6d4"
+                : "#ff7f7a",
+            color:
+              loading || (scope !== "popular" && !currentUser)
+                ? "#9c6a68"
+                : "#ffffff",
+            marginLeft: 8,
+            cursor:
+              loading || (scope !== "popular" && !currentUser)
+                ? "not-allowed"
+                : "pointer",
+            fontWeight: 900,
+            fontSize: 13,
+            boxShadow:
+              loading || (scope !== "popular" && !currentUser)
+                ? "none"
+                : "0 6px 14px rgba(255, 127, 122, 0.35)",
+          }}
+        >
+          {loading ? "Loading..." : "Refresh"}
+        </button>
+      </section>
 
       <div
         style={{
           display: "flex",
           gap: 10,
           alignItems: "center",
-          marginBottom: 24,
+          marginBottom: 0,
           flexWrap: "wrap",
+          background: "#ff7f7a",
+          padding: "12px clamp(24px, 5vw, 72px)",
+          borderBottom: "1px solid #f26a66",
         }}
       >
         {currentUser ? (
           <>
             <ScopeButton
-          label="All"
-          value="all"
-          activeScope={scope}
-          onClick={changeScope}
-          disabled={loading || (scope !== "popular" && !currentUser)}
-        />
+              label="All"
+              value="all"
+              activeScope={scope}
+              onClick={changeScope}
+              disabled={loading || (scope !== "popular" && !currentUser)}
+            />
 
             <ScopeButton
-          label="Friends"
-          value="friends"
-          activeScope={scope}
-          onClick={changeScope}
-          disabled={loading || !currentUser}
-        />
+              label="Friends"
+              value="friends"
+              activeScope={scope}
+              onClick={changeScope}
+              disabled={loading || !currentUser}
+            />
 
             <ScopeButton
-          label="Mine"
-          value="me"
-          activeScope={scope}
-          onClick={changeScope}
-          disabled={loading || !currentUser}
-        />
-
+              label="Mine"
+              value="me"
+              activeScope={scope}
+              onClick={changeScope}
+              disabled={loading || !currentUser}
+            />
           </>
         ) : null}
 
@@ -1261,32 +1414,20 @@ export default function FeedPage() {
           onClick={changeScope}
           disabled={loading}
         />
-
-        <button
-          type="button"
-          onClick={refreshFeed}
-          disabled={loading || !currentUser}
-          style={{
-            padding: "8px 12px",
-            borderRadius: 8,
-            border: "1px solid var(--app-border)",
-            background: "var(--app-surface-strong)",
-            marginLeft: 8,
-            cursor: loading || (scope !== "popular" && !currentUser) ? "not-allowed" : "pointer",
-          }}
-        >
-          {loading ? "Loading..." : "Refresh"}
-        </button>
       </div>
 
       {result && scope !== "popular" ? (
         <pre
           style={{
             whiteSpace: "pre-wrap",
-            background: "#f6f6f6",
-            padding: 12,
-            borderRadius: 8,
-            marginBottom: 20,
+            background: "#fff4f3",
+            padding: 16,
+            borderRadius: 14,
+            margin: "28px clamp(24px, 5vw, 72px) 0",
+            border: "1px solid #ffd6d4",
+            borderLeft: "6px solid #ff7f7a",
+            color: "#111111",
+            fontSize: 13,
           }}
         >
           {result}
@@ -1294,20 +1435,63 @@ export default function FeedPage() {
       ) : null}
 
       {!loading && events.length === 0 && !result && (
-        <p>{getEmptyMessage(scope)}</p>
+        <div
+          style={{
+            margin: "34px clamp(24px, 5vw, 72px)",
+            padding: "34px 24px",
+            textAlign: "center",
+            background: "#ffffff",
+            border: "1px solid #dedede",
+            borderRadius: 20,
+            boxShadow: "0 8px 22px rgba(0, 0, 0, 0.07)",
+          }}
+        >
+          <h2
+            style={{
+              margin: "0 0 8px",
+              fontSize: 24,
+              fontWeight: 900,
+              color: "#111111",
+            }}
+          >
+            No activity yet
+          </h2>
+
+          <p
+            style={{
+              margin: 0,
+              color: "#666666",
+              fontSize: 15,
+            }}
+          >
+            {getEmptyMessage(scope)}
+          </p>
+        </div>
       )}
 
       {scope === "popular" ? (
-        <>
+        <section
+          style={{
+            padding: "34px clamp(24px, 5vw, 72px) 54px",
+            background: "#f7f8fa",
+          }}
+        >
           <PopularLoadingMessage loading={loading} />
           <PopularMovieScroller events={events} />
           <PopularTvScroller events={popularTvEvents} />
           <PopularAlbumScroller events={popularAlbumEvents} />
           <PopularBookScroller events={popularBookEvents} />
           <PopularGameScroller events={popularGameEvents} />
-        </>
+        </section>
       ) : (
-        <div style={{ display: "grid", gap: 16 }}>
+        <div
+          style={{
+            display: "grid",
+            gap: 18,
+            padding: "34px clamp(24px, 5vw, 72px) 54px",
+            background: "#f7f8fa",
+          }}
+        >
           {events.map((event) => {
             const media = event.entry.media;
             const user = event.entry.user;
@@ -1318,31 +1502,52 @@ export default function FeedPage() {
               <article
                 key={`${event.id}-${media.externalId || media.id}`}
                 style={{
-                  border: "1px solid var(--app-border)",
-                  borderRadius: 12,
-                  padding: 16,
+                  border: "1px solid #dedede",
+                  borderRadius: 22,
+                  padding: 22,
                   display: "flex",
-                  gap: 18,
+                  gap: 22,
                   alignItems: "flex-start",
-                  background: "var(--app-surface-strong)",
+                  background: "#ffffff",
+                  boxShadow: "0 8px 22px rgba(0, 0, 0, 0.08)",
                 }}
               >
                 <a href={mediaHref} style={{ textDecoration: "none" }}>
                   <MediaCoverCard media={media} />
                 </a>
 
-                <div style={{ flex: 1 }}>
-                  <div style={{ marginBottom: 8 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      marginBottom: 8,
+                      fontSize: 17,
+                      lineHeight: 1.4,
+                      color: "#111111",
+                    }}
+                  >
                     <a
                       href={`/profiles/${user.username}`}
-                      style={{ color: "inherit" }}
+                      style={{
+                        color: "#111111",
+                        textDecoration: "none",
+                        fontWeight: 900,
+                      }}
                     >
                       <strong>
                         {user.displayName || user.username || "Unknown user"}
                       </strong>
                     </a>{" "}
-                    {formatEventType(event.eventType)}{" "}
-                    <a href={mediaHref}>
+                    <span style={{ color: "#555555" }}>
+                      {formatEventType(event.eventType)}
+                    </span>{" "}
+                    <a
+                      href={mediaHref}
+                      style={{
+                        color: "#e75f5a",
+                        textDecoration: "none",
+                        fontWeight: 900,
+                      }}
+                    >
                       <strong>{media.title}</strong>
                     </a>
                   </div>
@@ -1350,7 +1555,14 @@ export default function FeedPage() {
                   <MediaMeta media={media} />
 
                   {event.ratingValue !== null && (
-                    <p style={{ marginTop: 12, marginBottom: 0 }}>
+                    <p
+                      style={{
+                        marginTop: 14,
+                        marginBottom: 0,
+                        fontSize: 14,
+                        color: "#111111",
+                      }}
+                    >
                       Rating: <strong>{event.ratingValue}/10</strong>
                     </p>
                   )}
@@ -1358,9 +1570,14 @@ export default function FeedPage() {
                   {reviewText && (
                     <p
                       style={{
-                        marginTop: 12,
+                        marginTop: 14,
                         whiteSpace: "pre-wrap",
-                        lineHeight: 1.45,
+                        lineHeight: 1.5,
+                        color: "#333333",
+                        background: "#f7f8fa",
+                        borderLeft: "5px solid #ff7f7a",
+                        borderRadius: 10,
+                        padding: "13px 15px",
                       }}
                     >
                       {reviewText}
@@ -1369,18 +1586,43 @@ export default function FeedPage() {
 
                   <div
                     style={{
-                      marginTop: 12,
-                      color: "#777",
+                      marginTop: 14,
+                      color: "#777777",
                       fontSize: 13,
                     }}
                   >
                     {formatDate(event.createdAt)}
                   </div>
 
-                  <div style={{ marginTop: 12 }}>
-                    <a href={mediaHref}>View Media</a>
-                    {" | "}
-                    <a href={`/profiles/${user.username}`}>View Profile</a>
+                  <div
+                    style={{
+                      marginTop: 14,
+                      display: "flex",
+                      gap: 8,
+                      alignItems: "center",
+                      fontSize: 13,
+                      fontWeight: 900,
+                    }}
+                  >
+                    <a
+                      href={mediaHref}
+                      style={{
+                        color: "#ff7f7a",
+                        textDecoration: "none",
+                      }}
+                    >
+                      View Media
+                    </a>
+                    <span style={{ color: "#999999" }}>|</span>
+                    <a
+                      href={`/profiles/${user.username}`}
+                      style={{
+                        color: "#ff7f7a",
+                        textDecoration: "none",
+                      }}
+                    >
+                      View Profile
+                    </a>
                   </div>
                 </div>
               </article>
