@@ -83,7 +83,7 @@ export default function NavBar() {
         padding: "16px 48px",
         borderBottom: "3px solid #ff7f7a",
         display: "grid",
-        gridTemplateColumns: "auto minmax(280px, 560px) auto",
+        gridTemplateColumns: "auto minmax(220px, 420px) auto",
         alignItems: "center",
         gap: 24,
         background: "#ffe2df",
@@ -129,6 +129,7 @@ export default function NavBar() {
           display: "flex",
           gap: 8,
           width: "100%",
+          minWidth: 0,
         }}
       >
         <input
@@ -137,6 +138,7 @@ export default function NavBar() {
           placeholder="Search titles, people, authors, artists..."
           style={{
             width: "100%",
+            minWidth: 0,
             padding: "12px 14px",
             border: "1px solid #f0b7b3",
             borderRadius: 8,
@@ -144,7 +146,7 @@ export default function NavBar() {
             background: "#fff",
           }}
         />
-
+      
         <button
           type="submit"
           style={{
@@ -155,6 +157,8 @@ export default function NavBar() {
             color: "white",
             fontWeight: 700,
             cursor: "pointer",
+            whiteSpace: "nowrap",
+            flexShrink: 0,
           }}
         >
           Search
