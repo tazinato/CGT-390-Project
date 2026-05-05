@@ -97,10 +97,10 @@ function MediaCoverCard({ media }: { media: Media }) {
         style={{
           width: 160,
           height: 240,
-          border: "1px solid var(--app-border)",
-          borderRadius: 8,
+          border: "1px solid #ddd",
+          borderRadius: 10,
           overflow: "hidden",
-          background: "var(--app-surface-strong)",
+          background: "#fff",
           display: "flex",
           flexDirection: "column",
           flexShrink: 0,
@@ -117,6 +117,8 @@ function MediaCoverCard({ media }: { media: Media }) {
             alignItems: "center",
             justifyContent: "center",
             lineHeight: 1.15,
+            background: "#fafafa",
+            borderBottom: "1px solid #eee",
           }}
         >
           {media.albumDetails?.primaryArtistName ?? "Unknown Artist"}
@@ -147,7 +149,7 @@ function MediaCoverCard({ media }: { media: Media }) {
               }}
             />
           ) : (
-            <span style={{ fontSize: 12 }}>No cover</span>
+            <span style={{ fontSize: 12, color: "#666" }}>No cover</span>
           )}
         </div>
 
@@ -181,9 +183,9 @@ function MediaCoverCard({ media }: { media: Media }) {
           width: 160,
           height: 240,
           objectFit: "cover",
-          borderRadius: 8,
+          borderRadius: 10,
           flexShrink: 0,
-          border: "1px solid var(--app-border)",
+          border: "1px solid #ddd",
           background: "#eee",
         }}
       />
@@ -195,14 +197,15 @@ function MediaCoverCard({ media }: { media: Media }) {
       style={{
         width: 160,
         height: 240,
-        border: "1px solid var(--app-border)",
-        borderRadius: 8,
+        border: "1px solid #ddd",
+        borderRadius: 10,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         flexShrink: 0,
         background: "#eee",
         fontSize: 12,
+        color: "#666",
       }}
     >
       No cover
@@ -214,7 +217,14 @@ function MediaMeta({ media }: { media: Media }) {
   const year = formatYear(media.releaseDate);
 
   return (
-    <div style={{ color: "#555", fontSize: 14, marginTop: 4 }}>
+    <div
+      style={{
+        color: "#555",
+        fontSize: 14,
+        marginTop: 4,
+        lineHeight: 1.35,
+      }}
+    >
       <span>{media.type}</span>
 
       {year && <span> · {year}</span>}
@@ -355,7 +365,16 @@ export default function ProfileEntriesList({ entries, isOwnProfile }: Props) {
   }
 
   if (entries.length === 0) {
-    return <p>No entries yet.</p>;
+    return (
+      <p
+        style={{
+          color: "#777",
+          marginBottom: 0,
+        }}
+      >
+        No entries yet.
+      </p>
+    );
   }
 
   return (
@@ -385,21 +404,21 @@ export default function ProfileEntriesList({ entries, isOwnProfile }: Props) {
             key={entry.id}
             className="profile-entry-card"
             style={{
-              border: "1px solid var(--app-border)",
+              border: "1px solid #ddd",
               padding: 16,
               marginBottom: 16,
-              borderRadius: 12,
+              borderRadius: 14,
               display: "flex",
               gap: 18,
               alignItems: "flex-start",
-              background: "var(--app-surface-strong)",
+              background: "#fff",
             }}
           >
             <a href={`/media/${entry.media.id}`} style={{ textDecoration: "none" }}>
               <MediaCoverCard media={entry.media} />
             </a>
 
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <div
                 style={{
                   display: "flex",
@@ -408,9 +427,17 @@ export default function ProfileEntriesList({ entries, isOwnProfile }: Props) {
                   alignItems: "flex-start",
                 }}
               >
-                <div>
+                <div style={{ minWidth: 0 }}>
                   <h3 style={{ marginTop: 0, marginBottom: 4 }}>
-                    <a href={`/media/${entry.media.id}`}>{entry.media.title}</a>
+                    <a
+                      href={`/media/${entry.media.id}`}
+                      style={{
+                        color: "#111",
+                        textDecoration: "none",
+                      }}
+                    >
+                      {entry.media.title}
+                    </a>
                   </h3>
 
                   <MediaMeta media={entry.media} />
@@ -419,18 +446,23 @@ export default function ProfileEntriesList({ entries, isOwnProfile }: Props) {
                 {isOwnProfile ? (
                   <div
                     className="profile-entry-actions"
-                    style={{ display: "flex", gap: 8, flexShrink: 0 }}
+                    style={{
+                      display: "flex",
+                      gap: 8,
+                      flexShrink: 0,
+                    }}
                   >
                     <button
                       type="button"
                       disabled={saving}
                       onClick={() => startEditing(entry)}
                       style={{
-                        padding: "7px 11px",
-                        borderRadius: 999,
-                        border: "1px solid var(--app-border)",
-                        background: "white",
-                        fontWeight: 800,
+                        padding: "8px 11px",
+                        borderRadius: 8,
+                        border: "1px solid #ff7f7a",
+                        background: "#ffe2df",
+                        color: "#111",
+                        fontWeight: 700,
                         cursor: saving ? "not-allowed" : "pointer",
                       }}
                     >
@@ -442,12 +474,12 @@ export default function ProfileEntriesList({ entries, isOwnProfile }: Props) {
                       disabled={saving}
                       onClick={() => deleteEntry(entry)}
                       style={{
-                        padding: "7px 11px",
-                        borderRadius: 999,
-                        border: "1px solid #b00020",
-                        background: "white",
+                        padding: "8px 11px",
+                        borderRadius: 8,
+                        border: "1px solid #ddd",
+                        background: "#fff",
                         color: "#b00020",
-                        fontWeight: 800,
+                        fontWeight: 700,
                         cursor: saving ? "not-allowed" : "pointer",
                       }}
                     >
@@ -461,13 +493,19 @@ export default function ProfileEntriesList({ entries, isOwnProfile }: Props) {
                 <div
                   style={{
                     marginTop: 14,
-                    border: "1px solid var(--app-border)",
+                    border: "1px solid #ddd",
                     borderRadius: 12,
-                    padding: 12,
-                    background: "rgba(255,255,255,0.62)",
+                    padding: 14,
+                    background: "#fff2f1",
                   }}
                 >
-                  <label style={{ display: "block", fontWeight: 800, fontSize: 13 }}>
+                  <label
+                    style={{
+                      display: "block",
+                      fontWeight: 700,
+                      fontSize: 13,
+                    }}
+                  >
                     Status
                   </label>
 
@@ -479,9 +517,10 @@ export default function ProfileEntriesList({ entries, isOwnProfile }: Props) {
                       marginTop: 6,
                       width: "100%",
                       maxWidth: 260,
-                      padding: 8,
+                      padding: 9,
                       borderRadius: 8,
-                      border: "1px solid var(--app-border)",
+                      border: "1px solid #ddd",
+                      background: "#fff",
                     }}
                   >
                     {statusOptions.map((option) => (
@@ -494,7 +533,7 @@ export default function ProfileEntriesList({ entries, isOwnProfile }: Props) {
                   <label
                     style={{
                       display: "block",
-                      fontWeight: 800,
+                      fontWeight: 700,
                       fontSize: 13,
                       marginTop: 12,
                     }}
@@ -514,9 +553,10 @@ export default function ProfileEntriesList({ entries, isOwnProfile }: Props) {
                       marginTop: 6,
                       width: "100%",
                       maxWidth: 260,
-                      padding: 8,
+                      padding: 9,
                       borderRadius: 8,
-                      border: "1px solid var(--app-border)",
+                      border: "1px solid #ddd",
+                      background: "#fff",
                     }}
                   >
                     <option value="">No rating</option>
@@ -530,7 +570,7 @@ export default function ProfileEntriesList({ entries, isOwnProfile }: Props) {
                   <label
                     style={{
                       display: "block",
-                      fontWeight: 800,
+                      fontWeight: 700,
                       fontSize: 13,
                       marginTop: 12,
                     }}
@@ -548,25 +588,33 @@ export default function ProfileEntriesList({ entries, isOwnProfile }: Props) {
                       width: "100%",
                       boxSizing: "border-box",
                       padding: 10,
-                      borderRadius: 10,
-                      border: "1px solid var(--app-border)",
+                      borderRadius: 8,
+                      border: "1px solid #ddd",
                       font: "inherit",
                       resize: "vertical",
+                      background: "#fff",
                     }}
                   />
 
-                  <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 8,
+                      marginTop: 12,
+                      flexWrap: "wrap",
+                    }}
+                  >
                     <button
                       type="button"
                       disabled={saving}
                       onClick={() => saveEntry(entry)}
                       style={{
-                        padding: "8px 12px",
-                        borderRadius: 999,
-                        border: "1px solid #111",
-                        background: "#111",
+                        padding: "9px 12px",
+                        borderRadius: 8,
+                        border: "1px solid #ff7f7a",
+                        background: "#ff7f7a",
                         color: "white",
-                        fontWeight: 900,
+                        fontWeight: 700,
                         cursor: saving ? "not-allowed" : "pointer",
                       }}
                     >
@@ -578,11 +626,12 @@ export default function ProfileEntriesList({ entries, isOwnProfile }: Props) {
                       disabled={saving}
                       onClick={() => setEditingEntryId(null)}
                       style={{
-                        padding: "8px 12px",
-                        borderRadius: 999,
-                        border: "1px solid var(--app-border)",
-                        background: "white",
-                        fontWeight: 900,
+                        padding: "9px 12px",
+                        borderRadius: 8,
+                        border: "1px solid #ddd",
+                        background: "#fff",
+                        color: "#111",
+                        fontWeight: 700,
                         cursor: saving ? "not-allowed" : "pointer",
                       }}
                     >
@@ -608,6 +657,10 @@ export default function ProfileEntriesList({ entries, isOwnProfile }: Props) {
                         marginTop: 12,
                         whiteSpace: "pre-wrap",
                         lineHeight: 1.45,
+                        background: "#f7f8fa",
+                        border: "1px solid #eee",
+                        borderRadius: 8,
+                        padding: 12,
                       }}
                     >
                       {entry.reviewText}
@@ -615,13 +668,30 @@ export default function ProfileEntriesList({ entries, isOwnProfile }: Props) {
                   )}
 
                   <div style={{ marginTop: 12 }}>
-                    <a href={`/media/${entry.media.id}`}>View Media</a>
+                    <a
+                      href={`/media/${entry.media.id}`}
+                      style={{
+                        color: "#d95d59",
+                        fontWeight: 700,
+                        textDecoration: "none",
+                      }}
+                    >
+                      View Media
+                    </a>
                   </div>
                 </>
               )}
 
               {message ? (
-                <p style={{ color: "#b00020", fontWeight: 800 }}>{message}</p>
+                <p
+                  style={{
+                    color: "#b00020",
+                    fontWeight: 700,
+                    marginBottom: 0,
+                  }}
+                >
+                  {message}
+                </p>
               ) : null}
             </div>
           </article>
