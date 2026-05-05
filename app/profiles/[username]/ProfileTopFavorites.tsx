@@ -85,10 +85,10 @@ function MediaCoverCard({ media }: { media: Media }) {
         style={{
           width: 160,
           height: 240,
-          border: "1px solid #ddd",
-          borderRadius: 10,
+          border: "1px solid var(--app-border)",
+          borderRadius: 8,
           overflow: "hidden",
-          background: "#fff",
+          background: "var(--app-surface-strong)",
           display: "flex",
           flexDirection: "column",
           flexShrink: 0,
@@ -105,8 +105,8 @@ function MediaCoverCard({ media }: { media: Media }) {
             alignItems: "center",
             justifyContent: "center",
             lineHeight: 1.15,
-            background: "#fafafa",
-            borderBottom: "1px solid #eee",
+
+
           }}
         >
           {media.albumDetails?.primaryArtistName ?? "Unknown Artist"}
@@ -137,7 +137,7 @@ function MediaCoverCard({ media }: { media: Media }) {
               }}
             />
           ) : (
-            <span style={{ fontSize: 12, color: "#666" }}>No cover</span>
+            <span style={{ fontSize: 12 }}>No cover</span>
           )}
         </div>
 
@@ -171,9 +171,9 @@ function MediaCoverCard({ media }: { media: Media }) {
           width: 160,
           height: 240,
           objectFit: "cover",
-          borderRadius: 10,
+          borderRadius: 8,
           flexShrink: 0,
-          border: "1px solid #ddd",
+          border: "1px solid var(--app-border)",
           background: "#eee",
         }}
       />
@@ -185,15 +185,15 @@ function MediaCoverCard({ media }: { media: Media }) {
       style={{
         width: 160,
         height: 240,
-        border: "1px solid #ddd",
-        borderRadius: 10,
+        border: "1px solid var(--app-border)",
+        borderRadius: 8,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         flexShrink: 0,
         background: "#eee",
         fontSize: 12,
-        color: "#666",
+
       }}
     >
       No cover
@@ -204,26 +204,26 @@ function MediaCoverCard({ media }: { media: Media }) {
 function EmptyFavoriteSlot({ slotNumber }: { slotNumber: number }) {
   return (
     <div>
-      <div
-        style={{
-          marginBottom: 8,
-          fontWeight: 700,
-          color: "#d95d59",
-        }}
-      >
-        #{slotNumber}
-      </div>
+      <div style={{ marginBottom: 8, fontWeight: 700 }}>#{slotNumber}</div>
+
+
+
+
+
+
+
+
 
       <div
         style={{
           width: 160,
           height: 240,
           border: "1px dashed #bbb",
-          borderRadius: 10,
+          borderRadius: 8,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#fafafa",
+          background: "#f7f7f7",
           color: "#777",
           fontSize: 13,
         }}
@@ -239,10 +239,10 @@ function OptionCover({ media }: { media: Media }) {
     <div
       style={{
         width: 52,
-        height: media.type === "ALBUM" ? 52 : 78,
-        borderRadius: 8,
+        height: 78,
+        borderRadius: 6,
         overflow: "hidden",
-        border: "1px solid #ddd",
+        border: "1px solid var(--app-border)",
         background: "#eee",
         flexShrink: 0,
       }}
@@ -394,13 +394,13 @@ export default function ProfileTopFavorites({
 
   return (
     <>
-      <div
-        style={{
-          display: "flex",
-          gap: 16,
-          flexWrap: "wrap",
-        }}
-      >
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+
+
+
+
+
+
         {[1, 2, 3, 4].map((slotNumber) => {
           const favorite = favoriteBySlot.get(slotNumber);
 
@@ -415,13 +415,13 @@ export default function ProfileTopFavorites({
                   display: "block",
                 }}
               >
-                <div
-                  style={{
-                    marginBottom: 8,
-                    fontWeight: 700,
-                    color: "#d95d59",
-                  }}
-                >
+                <div style={{ marginBottom: 8, fontWeight: 700 }}>
+
+
+
+
+
+
                   #{slotNumber}
                 </div>
 
@@ -448,13 +448,13 @@ export default function ProfileTopFavorites({
             >
               {favorite ? (
                 <>
-                  <div
-                    style={{
-                      marginBottom: 8,
-                      fontWeight: 700,
-                      color: "#d95d59",
-                    }}
-                  >
+                  <div style={{ marginBottom: 8, fontWeight: 700 }}>
+
+
+
+
+
+
                     #{slotNumber}
                   </div>
 
@@ -502,20 +502,21 @@ export default function ProfileTopFavorites({
               maxHeight: "80vh",
               overflow: "hidden",
               borderRadius: 18,
-              background: "#fff",
-              border: "1px solid #ddd",
+              background: "var(--app-surface-strong, white)",
+              border: "1px solid var(--app-border)",
+              boxShadow: "0 24px 80px rgba(0,0,0,0.22)",
               display: "flex",
               flexDirection: "column",
             }}
             onClick={(event) => event.stopPropagation()}
           >
-            <div
-              style={{
-                padding: 18,
-                borderBottom: "1px solid #ddd",
-                background: "#fff",
-              }}
-            >
+            <div style={{ padding: 18, borderBottom: "1px solid #eee" }}>
+
+
+
+
+
+
               <div
                 style={{
                   display: "flex",
@@ -526,14 +527,14 @@ export default function ProfileTopFavorites({
               >
                 <div>
                   <h2 style={{ margin: 0 }}>Choose favorite #{activeSlot}</h2>
+                  <p style={{ margin: "6px 0 0", color: "#666" }}>
 
-                  <p
-                    style={{
-                      margin: "6px 0 0",
-                      color: "#666",
-                      lineHeight: 1.4,
-                    }}
-                  >
+
+
+
+
+
+
                     Pick from media you have already logged.
                   </p>
                 </div>
@@ -543,12 +544,12 @@ export default function ProfileTopFavorites({
                   disabled={saving}
                   onClick={() => setActiveSlot(null)}
                   style={{
-                    border: "1px solid #ddd",
-                    background: "#fff",
-                    borderRadius: 8,
-                    padding: "8px 11px",
+                    border: "1px solid var(--app-border)",
+                    background: "white",
+                    borderRadius: 999,
+                    padding: "7px 11px",
                     cursor: saving ? "not-allowed" : "pointer",
-                    fontWeight: 700,
+                    fontWeight: 800,
                   }}
                 >
                   Close
@@ -563,11 +564,11 @@ export default function ProfileTopFavorites({
                   marginTop: 14,
                   width: "100%",
                   boxSizing: "border-box",
-                  border: "1px solid #ddd",
-                  borderRadius: 8,
+                  border: "1px solid var(--app-border)",
+                  borderRadius: 999,
                   padding: "10px 13px",
                   fontSize: 14,
-                  background: "#fff",
+
                 }}
               />
 
@@ -580,8 +581,8 @@ export default function ProfileTopFavorites({
                     marginTop: 10,
                     border: 0,
                     background: "transparent",
-                    color: "#d95d59",
-                    fontWeight: 700,
+                    color: "#b00020",
+                    fontWeight: 800,
                     textDecoration: "underline",
                     cursor: saving ? "not-allowed" : "pointer",
                     padding: 0,
@@ -592,15 +593,15 @@ export default function ProfileTopFavorites({
               ) : null}
 
               {message ? (
-                <p
-                  style={{
-                    color: "#b00020",
-                    fontWeight: 700,
-                    marginBottom: 0,
-                  }}
-                >
-                  {message}
-                </p>
+                <p style={{ color: "#b00020", fontWeight: 700 }}>{message}</p>
+
+
+
+
+
+
+
+
               ) : null}
             </div>
 
@@ -609,72 +610,72 @@ export default function ProfileTopFavorites({
                 overflowY: "auto",
                 padding: 14,
                 display: "grid",
-                gap: 0,
+                gap: 10,
               }}
             >
               {loadingOptions ? (
                 <p>Loading your logged media...</p>
               ) : filteredOptions.length === 0 ? (
                 <p style={{ color: "#666" }}>
-                  No logged media found. Add entries first, then choose your top
-                  4.
+                  No logged media found. Add entries first, then choose your top 4.
+
                 </p>
               ) : (
-                <div
-                  style={{
-                    border: "1px solid #ddd",
-                    borderRadius: 12,
-                    overflow: "hidden",
-                    background: "#fff",
-                  }}
-                >
-                  {filteredOptions.map((option) => (
-                    <button
-                      key={`${option.entryId}-${option.media.id}`}
-                      type="button"
-                      disabled={saving}
-                      onClick={() => saveFavorite(option.media.id)}
-                      style={{
-                        border: "none",
-                        borderBottom: "1px solid #ddd",
-                        background:
-                          activeFavorite?.mediaId === option.media.id
-                            ? "#fff2f1"
-                            : "#fff",
-                        padding: 10,
-                        display: "flex",
-                        gap: 12,
-                        alignItems: "center",
-                        textAlign: "left",
-                        cursor: saving ? "not-allowed" : "pointer",
-                        width: "100%",
-                      }}
-                    >
-                      <OptionCover media={option.media} />
+                filteredOptions.map((option) => (
+                  <button
+                    key={`${option.entryId}-${option.media.id}`}
+                    type="button"
+                    disabled={saving}
+                    onClick={() => saveFavorite(option.media.id)}
+                    style={{
+                      border: "1px solid var(--app-border)",
+                      borderRadius: 12,
+                      background:
+                        activeFavorite?.mediaId === option.media.id
+                          ? "rgba(0,0,0,0.06)"
+                          : "white",
+                      padding: 10,
+                      display: "flex",
+                      gap: 12,
+                      alignItems: "center",
+                      textAlign: "left",
+                      cursor: saving ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    <OptionCover media={option.media} />
 
-                      <div>
-                        <strong style={{ display: "block" }}>
-                          {option.media.title}
-                        </strong>
+                    <div>
+                      <strong style={{ display: "block" }}>
+                        {option.media.title}
+                      </strong>
+                      <span style={{ color: "#666", fontSize: 13 }}>
+                        {option.media.type}
+                        {formatYear(option.media.releaseDate)
+                          ? ` · ${formatYear(option.media.releaseDate)}`
+                          : ""}
+                        {option.ratingValue
+                          ? ` · ${option.ratingValue}/10`
+                          : ""}
+                      </span>
+                    </div>
+                  </button>
+                ))
 
-                        <span
-                          style={{
-                            color: "#666",
-                            fontSize: 13,
-                          }}
-                        >
-                          {option.media.type}
-                          {formatYear(option.media.releaseDate)
-                            ? ` · ${formatYear(option.media.releaseDate)}`
-                            : ""}
-                          {option.ratingValue
-                            ? ` · ${option.ratingValue}/10`
-                            : ""}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
               )}
             </div>
           </div>
