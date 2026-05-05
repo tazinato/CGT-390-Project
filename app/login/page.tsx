@@ -167,6 +167,7 @@ export default function LoginPage() {
         alignItems: "center",
         justifyContent: "center",
         background: "var(--app-bg)",
+
       }}
     >
       <style>
@@ -219,6 +220,8 @@ export default function LoginPage() {
             }}
           />
 
+
+
           <div style={{ position: "relative", zIndex: 1 }}>
             <h1
               style={{
@@ -254,6 +257,16 @@ export default function LoginPage() {
                 marginTop: 34,
               }}
             >
+
+
+
+
+
+
+
+
+
+
               <div
                 style={{
                   border: "1px solid rgba(255,255,255,0.18)",
@@ -316,6 +329,7 @@ export default function LoginPage() {
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
+
           }}
         >
           <div style={{ marginBottom: 26 }}>
