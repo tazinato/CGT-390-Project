@@ -154,12 +154,13 @@ export default function MediaActions({
         disabled={saving}
         onClick={() => save(value)}
         style={{
-          padding: "4px 9px",
-          borderRadius: 999,
-          border: active ? "2px solid black" : "1px solid var(--app-border, #ccc)",
-          background: active ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.74)",
-          fontWeight: 800,
-          fontSize: 12,
+          padding: "8px 12px",
+          borderRadius: 8,
+          border: active ? "1px solid #ff7f7a" : "1px solid #ddd",
+          background: active ? "#ffe2df" : "#fff",
+          color: "#111",
+          fontWeight: active ? 700 : 600,
+          fontSize: 13,
           cursor: saving ? "not-allowed" : "pointer",
         }}
       >
@@ -176,59 +177,60 @@ export default function MediaActions({
         marginTop: 0,
         width: "100%",
         maxWidth: "none",
-        height: "100%",
       }}
     >
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
         style={{
-          padding: "7px 13px",
-          borderRadius: 999,
-          border: "1px solid #222",
-          background: open ? "black" : "rgba(255,255,255,0.72)",
-          color: open ? "white" : "black",
-          fontWeight: 900,
-          fontSize: 13,
+          padding: "10px 14px",
+          borderRadius: 8,
+          border: "1px solid #ff7f7a",
+          background: open ? "#ff7f7a" : "#ffe2df",
+          color: open ? "white" : "#111",
+          fontWeight: 700,
+          fontSize: 14,
           cursor: "pointer",
         }}
       >
-        {open ? "Close log" : "Add / rate / review"}
+        {open ? "Close Log" : "Add / Rate / Review"}
       </button>
 
       {open ? (
         <div
           className="media-actions-panel"
           style={{
-            marginTop: 8,
-            border: "1px solid var(--app-border, #ccc)",
-            borderRadius: 16,
-            padding: 12,
-            background: "var(--app-surface-strong, rgba(255,255,255,0.9))",
+            marginTop: 12,
+            border: "1px solid #ddd",
+            borderRadius: 14,
+            padding: 16,
+            background: "#fff",
             width: "100%",
             maxWidth: "none",
-            height: "calc(100% - 44px)",
-            minHeight: 0,
             boxSizing: "border-box",
           }}
         >
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "minmax(0, 1fr) 300px",
+              gridTemplateColumns: "minmax(0, 1fr) 280px",
               gap: 18,
-              alignItems: "stretch",
-              height: "100%",
-              minHeight: 0,
+              alignItems: "start",
             }}
           >
             <div
               style={{
                 minWidth: 0,
-                display: "flex",
-                flexDirection: "column",              }}
+              }}
             >
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  flexWrap: "wrap",
+                  marginBottom: 14,
+                }}
+              >
                 <StatusButton value="WISHLIST" label={copy.wishlist} />
 
                 {copy.inProgress ? (
@@ -238,130 +240,115 @@ export default function MediaActions({
                 <StatusButton value="COMPLETED" label={copy.completed} />
               </div>
 
-              <div
+              <label
+                htmlFor="review-text"
                 style={{
-                  marginTop: 10,
-                  display: "flex",
-                  flexDirection: "column",
-                  flex: 1,
+                  display: "block",
+                  fontWeight: 700,
+                  fontSize: 14,
+                  marginBottom: 6,
                 }}
               >
-                <label
-                  htmlFor="review-text"
-                  style={{
-                    display: "block",
-                    fontWeight: 800,
-                    fontSize: 12,
-                    marginBottom: 5,
-                  }}
-                >
-                  {copy.review}
-                </label>
+                {copy.review}
+              </label>
 
-                <textarea
-                  id="review-text"
-                  value={review}
-                  onChange={(event) => setReview(event.target.value)}
-                  rows={4}
-                  disabled={saving}
-                  placeholder={copy.placeholder}
-                  style={{
-                    display: "block",
-                    width: "100%",
-                    boxSizing: "border-box",
-                    padding: 8,
-                    borderRadius: 10,
-                    border: "1px solid var(--app-border, #ccc)",
-                    font: "inherit",
-                    fontSize: 13,
-                    lineHeight: 1.25,
-                    resize: "vertical",
-                    minHeight: 0,
-                    maxHeight: "none",
-                    flex: 1,
-                    background: saving ? "#f6f6f6" : "rgba(255,255,255,0.76)",
-                  }}
-                />
-              </div>
+              <textarea
+                id="review-text"
+                value={review}
+                onChange={(event) => setReview(event.target.value)}
+                rows={5}
+                disabled={saving}
+                placeholder={copy.placeholder}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  boxSizing: "border-box",
+                  padding: 10,
+                  borderRadius: 8,
+                  border: "1px solid #ddd",
+                  font: "inherit",
+                  fontSize: 14,
+                  lineHeight: 1.4,
+                  resize: "vertical",
+                  minHeight: 120,
+                  background: saving ? "#f6f6f6" : "#fff",
+                }}
+              />
             </div>
 
             <div
               style={{
                 minWidth: 0,
-                textAlign: "right",
                 display: "flex",
                 flexDirection: "column",
-                alignItems: "flex-end",
-                justifyContent: "space-between",
-                gap: 10,
-                height: "100%",
-                minHeight: 0,
+                gap: 14,
+                alignItems: "flex-start",
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "flex-end",
-                  gap: 8,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                <strong style={{ fontSize: 12 }}>
-                  Rating:
+              <div>
+                <strong
+                  style={{
+                    display: "block",
+                    fontSize: 14,
+                    marginBottom: 8,
+                  }}
+                >
+                  Rating: {rating ? `${rating}/10` : "Not rated"}
                 </strong>
 
                 <div
                   style={{
                     display: "flex",
-                    gap: 5,
+                    gap: 6,
                     alignItems: "center",
+                    flexWrap: "wrap",
                   }}
                 >
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    aria-label={`Rate ${value} out of 10`}
-                    title={`${value}/10`}
-                    disabled={saving}
-                    onClick={() => setRating(value)}
-                    style={{
-                      width: 13,
-                      height: 13,
-                      borderRadius: 999,
-                      border:
-                        rating === value
-                          ? "2px solid black"
-                          : "1px solid var(--app-border, #ccc)",
-                      background:
-                        rating >= value ? "black" : "rgba(255,255,255,0.82)",
-                      cursor: saving ? "not-allowed" : "pointer",
-                      padding: 0,
-                    }}
-                  />
-                ))}
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      aria-label={`Rate ${value} out of 10`}
+                      title={`${value}/10`}
+                      disabled={saving}
+                      onClick={() => setRating(value)}
+                      style={{
+                        width: 16,
+                        height: 16,
+                        borderRadius: 999,
+                        border:
+                          rating === value
+                            ? "2px solid #d95d59"
+                            : "1px solid #ccc",
+                        background: rating >= value ? "#ff7f7a" : "#fff",
+                        cursor: saving ? "not-allowed" : "pointer",
+                        padding: 0,
+                      }}
+                    />
+                  ))}
                 </div>
-              </div>
 
-              {rating ? (
-                <button
-                  type="button"
-                  disabled={saving}
-                  onClick={() => setRating(0)}
-                  style={{
-                    padding: 0,
-                    border: 0,
-                    background: "transparent",
-                    cursor: saving ? "not-allowed" : "pointer",
-                    fontSize: 11,
-                    fontWeight: 800,
-                    textDecoration: "underline",
-                  }}
-                >
-                  Clear rating
-                </button>
-              ) : null}
+                {rating ? (
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={() => setRating(0)}
+                    style={{
+                      marginTop: 8,
+                      padding: 0,
+                      border: 0,
+                      background: "transparent",
+                      color: "#d95d59",
+                      cursor: saving ? "not-allowed" : "pointer",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      textDecoration: "underline",
+                    }}
+                  >
+                    Clear rating
+                  </button>
+                ) : null}
+              </div>
 
               <button
                 className="media-actions-save"
@@ -369,15 +356,14 @@ export default function MediaActions({
                 disabled={saving}
                 onClick={() => save()}
                 style={{
-                  padding: "8px 14px",
-                  borderRadius: 999,
-                  border: "1px solid #222",
-                  background: "black",
+                  padding: "10px 16px",
+                  borderRadius: 8,
+                  border: "1px solid #ff7f7a",
+                  background: saving ? "#f0b7b3" : "#ff7f7a",
                   color: "white",
-                  fontWeight: 900,
-                  fontSize: 13,
+                  fontWeight: 700,
+                  fontSize: 14,
                   cursor: saving ? "not-allowed" : "pointer",
-                  opacity: saving ? 0.7 : 1,
                 }}
               >
                 {saving ? "Saving..." : "Save"}
@@ -386,7 +372,14 @@ export default function MediaActions({
           </div>
 
           {message ? (
-            <p style={{ color: "#555", margin: "8px 0 0", fontSize: 12 }}>
+            <p
+              style={{
+                color: message === "Saved." ? "#2f7d32" : "#555",
+                margin: "12px 0 0",
+                fontSize: 13,
+                fontWeight: 600,
+              }}
+            >
               {message}
             </p>
           ) : null}
