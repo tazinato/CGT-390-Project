@@ -1,8 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #f7f8fa;
   --foreground: #171717;
+
+  --app-bg: #f7f8fa;
+  --app-page-bg: #f7f8fa;
+  --app-surface: #ffffff;
+  --app-surface-strong: #ffffff;
+  --app-border: #dddddd;
+  --app-text: #171717;
+  --app-muted: #555555;
+
+  --app-coral: #ff7f7a;
+  --app-coral-light: #ffe2df;
+  --app-coral-soft: #fff2f1;
+  --app-coral-dark: #d95d59;
+  --app-error: #b00020;
 }
 
 @theme inline {
@@ -12,243 +26,69 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  min-height: 100%;
+  background: var(--app-bg);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  min-height: 100vh;
+  margin: 0;
+  background: var(--app-bg);
+  color: var(--app-text);
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Soft neutral app background */
-html {
-  min-height: 100%;
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.95), transparent 34%),
-    linear-gradient(to bottom, #f5f5f5, #e5e5e5);
-}
-
-body {
-  min-height: 100%;
-  margin: 0;
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.95), transparent 34%),
-    linear-gradient(to bottom, #f5f5f5, #e5e5e5);
-  color: #171717;
+* {
+  box-sizing: border-box;
 }
 
 main {
   background: transparent;
 }
 
-/* Soft warm-neutral app theme */
-:root {
-  --app-bg:
-    radial-gradient(circle at top left, rgba(255,255,255,0.92), transparent 32%),
-    linear-gradient(to bottom, #f5f5f5, #e5e5e5);
-  --app-surface: rgba(255, 252, 247, 0.82);
-  --app-surface-strong: rgba(255, 252, 247, 0.94);
-  --app-border: rgba(35, 31, 25, 0.13);
-  --app-text: #171717;
-  --app-muted: #5f5b55;
+a {
+  color: var(--app-coral-dark);
 }
 
-html,
-body {
-  min-height: 100%;
-  background: var(--app-bg) !important;
-  color: var(--app-text);
-}
-
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: var(--app-bg);
-}
-
-main {
-  background: transparent !important;
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
 }
 
 input,
 textarea,
 select {
-  background-color: rgba(255, 255, 255, 0.72);
+  background-color: #ffffff;
 }
 
-
-/* App-wide soft background override */
-:root {
-  --app-bg:
-    radial-gradient(circle at top left, rgba(255,255,255,0.92), transparent 30%),
-    linear-gradient(to bottom, #f5f5f5, #e5e5e5);
-  --app-surface: rgba(255, 252, 247, 0.84);
-  --app-surface-strong: rgba(255, 252, 247, 0.94);
-  --app-border: rgba(35, 31, 25, 0.14);
-  --app-text: #171717;
-  --app-muted: #5f5b55;
+button {
+  cursor: pointer;
 }
 
-html,
-body {
-  min-height: 100%;
-  margin: 0;
-  background: var(--app-bg) fixed !important;
-  color: var(--app-text);
+button:disabled {
+  cursor: not-allowed;
 }
 
-body {
-  min-height: 100vh;
+img {
+  max-width: 100%;
 }
 
-body > div,
-body > div > div {
-  background: transparent !important;
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+span,
+a,
+button {
+  overflow-wrap: anywhere;
 }
 
-main {
-  background: transparent !important;
-}
-
-input,
-textarea,
-select {
-  background-color: rgba(255,255,255,0.74);
-}
-/* Media detail: only tighten synopsis when the review panel is open */
-
-/* Media detail: only tighten synopsis when the review panel is open */
 .media-hero:has(.media-actions-panel) .media-description {
   -webkit-line-clamp: 3 !important;
-}\n\n
-/* Feed/card grey theme override */
-:root {
-  --app-bg: #e3e3e3;
-  --app-page-bg: #e3e3e3;
-  --app-surface: #e9e9e7;
-  --app-surface-strong: #eeeeec;
-  --app-border: rgba(0, 0, 0, 0.13);
-}
-
-html,
-body {
-  background: var(--app-bg) !important;
-}
-
-/* Warmer/darker page background contrast override */
-:root {
-  --app-bg: #d8d6d2;
-  --app-page-bg: #d8d6d2;
-  --app-surface: #e5e2dc;
-  --app-surface-strong: #f1eee8;
-  --app-border: rgba(0, 0, 0, 0.15);
-}
-
-html,
-body {
-  background:
-    radial-gradient(circle at 18% 8%, rgba(255, 232, 218, 0.55), transparent 34%),
-    radial-gradient(circle at 85% 18%, rgba(255, 212, 207, 0.38), transparent 32%),
-    linear-gradient(135deg, #d2d0cc 0%, #dedbd5 42%, #cfcfcb 100%) !important;
-  background-attachment: fixed !important;
-}
-
-/* Unified warm neutral theme override */
-:root {
-  --app-bg: #d9d3cb;
-  --app-page-bg: #d9d3cb;
-  --app-surface: #e7e1d8;
-  --app-surface-strong: #f2ede5;
-  --app-border: rgba(57, 45, 35, 0.15);
-}
-
-html,
-body {
-  background:
-    radial-gradient(circle at 18% 10%, rgba(245, 220, 202, 0.44), transparent 34%),
-    radial-gradient(circle at 85% 16%, rgba(232, 211, 195, 0.36), transparent 32%),
-    linear-gradient(135deg, #d5cec5 0%, #dfd8ce 45%, #d2cbc2 100%) !important;
-  background-attachment: fixed !important;
-}
-
-/* Neutral grey theme override */
-:root {
-  --app-bg: #d6d6d6;
-  --app-page-bg: #d6d6d6;
-  --app-surface: #e4e4e4;
-  --app-surface-strong: #f0f0f0;
-  --app-border: rgba(0, 0, 0, 0.14);
-}
-
-html,
-body {
-  background:
-    radial-gradient(circle at 18% 10%, rgba(245, 245, 245, 0.38), transparent 34%),
-    radial-gradient(circle at 85% 16%, rgba(220, 220, 220, 0.34), transparent 32%),
-    linear-gradient(135deg, #d0d0d0 0%, #dddddd 45%, #c9c9c9 100%) !important;
-  background-attachment: fixed !important;
-}
-
-/* Warm pink-grey theme override */
-:root {
-  --app-bg: #d8cfce;
-  --app-page-bg: #d8cfce;
-  --app-surface: #e7dddb;
-  --app-surface-strong: #f3eeee;
-  --app-border: rgba(65, 45, 45, 0.15);
-}
-
-html,
-body {
-  background:
-    radial-gradient(circle at 18% 10%, rgba(255, 226, 222, 0.36), transparent 34%),
-    radial-gradient(circle at 86% 14%, rgba(235, 204, 202, 0.32), transparent 34%),
-    linear-gradient(135deg, #d2c8c7 0%, #ded4d2 44%, #cfc5c4 100%) !important;
-  background-attachment: fixed !important;
-}
-
-/* Warm pink-grey palette override */
-:root {
-  --app-bg: #ccbdbd;
-  --app-page-bg: #ccbdbd;
-  --app-surface: #e5cece;
-  --app-surface-strong: #f2cfcf;
-  --app-border: rgba(124, 117, 117, 0.34);
-  --app-muted: #968f8f;
-  --app-ink-soft: #7c7575;
-}
-
-html,
-body {
-  background:
-    radial-gradient(circle at 18% 10%, rgba(242, 207, 207, 0.45), transparent 34%),
-    radial-gradient(circle at 86% 14%, rgba(229, 206, 206, 0.38), transparent 34%),
-    linear-gradient(135deg, #e5cece 0%, #ccbdbd 52%, #bdb0b0 100%) !important;
-  background-attachment: fixed !important;
-}
-
-/* Slightly lighter warm pink-grey background override */
-:root {
-  --app-bg: #ded1d1;
-  --app-page-bg: #ded1d1;
-  --app-surface: #eddada;
-  --app-surface-strong: #f8e2e2;
-  --app-border: rgba(124, 117, 117, 0.24);
-}
-
-html,
-body {
-  background:
-    radial-gradient(circle at 18% 10%, rgba(255, 231, 231, 0.54), transparent 34%),
-    radial-gradient(circle at 86% 14%, rgba(240, 216, 216, 0.42), transparent 34%),
-    linear-gradient(135deg, #eddada 0%, #ded1d1 52%, #d2c6c6 100%) !important;
-  background-attachment: fixed !important;
 }
