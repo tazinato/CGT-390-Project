@@ -756,9 +756,9 @@ export default async function MediaPage({ params }: Props) {
                     width: "100%",
                     minHeight: 145,
                     borderRadius: 14,
-                    border: "1px solid #ddd",
+                    border: "1px solid #ffd6d4",
                     background:
-                      "linear-gradient(135deg, #111111 0%, #3b3b3b 45%, #ff7f7a 100%)",
+                      "linear-gradient(135deg, #fff2f1 0%, #ffffff 45%, #ffe2df 100%)",
                     display: "flex",
                     alignItems: "center",
                     padding: 22,
@@ -775,7 +775,7 @@ export default async function MediaPage({ params }: Props) {
                       objectFit: "contain",
                       objectPosition: "left center",
                       filter:
-                        "drop-shadow(0 2px 4px rgba(0,0,0,0.7)) drop-shadow(0 0 10px rgba(255,255,255,0.2))",
+                        "drop-shadow(0 2px 3px rgba(0,0,0,0.35)) drop-shadow(0 0 8px rgba(255,255,255,0.65))",
                     }}
                   />
                 </div>
