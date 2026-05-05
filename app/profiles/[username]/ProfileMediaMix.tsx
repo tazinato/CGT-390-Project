@@ -106,16 +106,15 @@ export default function ProfileMediaMix({ entries }: Props) {
   return (
     <aside
       style={{
-        border: "1px solid var(--app-border)",
-        borderRadius: 16,
-        background: "var(--app-surface-strong, rgba(255,255,255,0.86))",
-        padding: 16,
-        width: 430,
-        height: 240,
+        border: "1px solid #ddd",
+        borderRadius: 14,
+        background: "#fff",
+        padding: 18,
+        width: "100%",
+        maxWidth: 430,
         boxSizing: "border-box",
         justifySelf: "end",
         alignSelf: "start",
-        marginTop: 54,
         display: "grid",
         gridTemplateColumns: "150px 1fr",
         gap: 14,
@@ -123,8 +122,22 @@ export default function ProfileMediaMix({ entries }: Props) {
       }}
     >
       <div>
-        <h2 style={{ margin: 0, fontSize: 18 }}>Media Mix</h2>
-        <p style={{ margin: "5px 0 14px", color: "#666", fontSize: 13 }}>
+        <h2
+          style={{
+            margin: 0,
+            fontSize: 20,
+          }}
+        >
+          Media Mix
+        </h2>
+
+        <p
+          style={{
+            margin: "6px 0 14px",
+            color: "#666",
+            fontSize: 13,
+          }}
+        >
           Logs by media type
         </p>
 
@@ -139,7 +152,14 @@ export default function ProfileMediaMix({ entries }: Props) {
           {counts.map((item) => (
             <div key={item.type} style={{ display: "contents" }}>
               <span style={{ color: "#555" }}>{item.label}</span>
-              <strong>{Math.round(item.count * animatedProgress)}</strong>
+
+              <strong
+                style={{
+                  color: "#d95d59",
+                }}
+              >
+                {Math.round(item.count * animatedProgress)}
+              </strong>
             </div>
           ))}
         </div>
@@ -169,7 +189,7 @@ export default function ProfileMediaMix({ entries }: Props) {
               key={level}
               points={gridPoints}
               fill="none"
-              stroke="rgba(0,0,0,0.14)"
+              stroke="#dddddd"
               strokeWidth="1"
             />
           );
@@ -185,7 +205,7 @@ export default function ProfileMediaMix({ entries }: Props) {
               y1={center}
               x2={outer.x}
               y2={outer.y}
-              stroke="rgba(0,0,0,0.14)"
+              stroke="#dddddd"
               strokeWidth="1"
             />
           );
@@ -193,8 +213,8 @@ export default function ProfileMediaMix({ entries }: Props) {
 
         <polygon
           points={polygonPoints}
-          fill="rgba(0,0,0,0.14)"
-          stroke="black"
+          fill="rgba(255, 127, 122, 0.22)"
+          stroke="#ff7f7a"
           strokeWidth="2"
           style={{
             transition: "points 120ms linear",
@@ -207,7 +227,8 @@ export default function ProfileMediaMix({ entries }: Props) {
 
           return (
             <g key={item.type}>
-              <circle cx={point.x} cy={point.y} r="4" fill="black" />
+              <circle cx={point.x} cy={point.y} r="4" fill="#ff7f7a" />
+
               <text
                 x={labelPoint.x}
                 y={labelPoint.y}
@@ -215,7 +236,7 @@ export default function ProfileMediaMix({ entries }: Props) {
                 dominantBaseline="middle"
                 fontSize="9"
                 fontWeight="700"
-                fill="black"
+                fill="#111"
               >
                 {item.label}
               </text>
